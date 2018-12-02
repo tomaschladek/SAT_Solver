@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections;
 using SatSolver.Dtos;
 
 namespace SatSolver.Strategy
@@ -16,18 +15,19 @@ namespace SatSolver.Strategy
 
         private int MaxProbes { get; set; }
 
-        public override IList<bool> Solve(SatDefinitionDto definition)
+        public override BitArray Solve(SatDefinitionDto definition)
         {
             Random generator = new Random();
+            var presence = new BitArray(definition.VariableCount, true);
             for (int probe = 0; probe < MaxProbes; probe++)
             {
                 var solution = CreateRandomSolution(definition, generator);
                 for (int flip = 0; flip < definition.VariableCount / 2; flip++)
                 {
 
-                    if (IsSatisfiable(definition, solution).Satisfaction == ESatisfaction.All)
+                    if (IsSatisfiable(definition, solution, presence).Satisfaction == ESatisfaction.All)
                     {
-                        return solution.Select(item => item ?? false).ToList();
+                        return solution;
                     }
 
                     solution = FlipVariableWithMostSatisfiedClauses(definition, solution);
@@ -37,29 +37,30 @@ namespace SatSolver.Strategy
             return null;
         }
 
-        private static IList<bool?> CreateRandomSolution(SatDefinitionDto definition, Random generator)
+        private static BitArray CreateRandomSolution(SatDefinitionDto definition, Random generator)
         {
-            var solution = new List<bool?>();
+            var solution = new BitArray(definition.VariableCount,true);
             for (int variableIndex = 0; variableIndex < definition.VariableCount; variableIndex++)
             {
-                solution.Add(generator.Next(1, 100) > 50);
+                solution[variableIndex] = generator.Next(1, 100) > 50;
             }
 
             return solution;
         }
 
-        private IList<bool?> FlipVariableWithMostSatisfiedClauses(SatDefinitionDto definition, IList<bool?> solution)
+        private BitArray FlipVariableWithMostSatisfiedClauses(SatDefinitionDto definition, BitArray solution)
         {
-            var max = new {Counter=-1, Solution = default(IList<bool?>)};
+            var max = new {Counter=-1, Solution = default(BitArray)};
+            var presence = new BitArray(definition.VariableCount, true);
 
             for (int flipIndex = 0; flipIndex < definition.VariableCount; flipIndex++)
             {
-                IList<bool?> flipped = new List<bool?>(solution)
+                var flipped = new BitArray(solution)
                 {
                     [flipIndex] = !solution[flipIndex]
                 };
 
-                var satisfiedClauses = IsSatisfiable(definition, flipped);
+                var satisfiedClauses = IsSatisfiable(definition, flipped, presence);
                 if (satisfiedClauses.Counter > max.Counter)
                 {
                     max = new {satisfiedClauses.Counter, Solution = flipped};

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using SatSolver.Dtos;
 
@@ -6,41 +7,42 @@ namespace SatSolver.Strategy
 {
     public class DpllStrategy : AbstractStrategy
     {
-        public override IList<bool> Solve(SatDefinitionDto definition)
+        public override BitArray Solve(SatDefinitionDto definition)
         {
-            var emptySolution = Enumerable.Repeat((bool?)null, definition.VariableCount).ToList();
-            SetPureVariable(definition, emptySolution);
-            return Solve(definition, emptySolution);
+            var emptySolution = new BitArray(definition.VariableCount, true);
+            var presence = new BitArray(definition.VariableCount, false);
+            SetPureVariable(definition, emptySolution, presence);
+            return Solve(definition, emptySolution, presence);
         }
 
-        private IList<bool> Solve(SatDefinitionDto definition, IList<bool?> solution)
+        private BitArray Solve(SatDefinitionDto definition, BitArray solution, BitArray presence)
         {
-            var nextPosition = GetNextPosition(solution);
+            var nextPosition = GetNextPosition(presence);
             if (nextPosition == null)
             {
                 // All fields filled - END condition
-                return GetResult(solution);
+                return solution;
             }
 
-            var result = UnitClausePropagation(definition, solution);
-            if (!result.Item2)
+            var result = UnitClausePropagation(definition, solution, presence);
+            if (!result)
             {
                 return null;
             }
 
-            nextPosition = GetNextPosition(solution);
+            nextPosition = GetNextPosition(presence);
             if (nextPosition == null)
             {
                 // All fields filled - END condition
-                return GetResult(solution);
+                return solution;
             }
 
 
-            return FindSolution(definition, solution, nextPosition.Value, true)
-                   ?? FindSolution(definition, solution, nextPosition.Value, false);
+            return FindSolution(definition, solution, presence, nextPosition.Value, true)
+                   ?? FindSolution(definition, solution, presence, nextPosition.Value, false);
         }
 
-        private (IList<bool?>,bool) UnitClausePropagation(SatDefinitionDto definition, IList<bool?> solution)
+        private bool UnitClausePropagation(SatDefinitionDto definition, BitArray solution, BitArray presence)
         {
             bool hasChanged;
             do
@@ -50,41 +52,44 @@ namespace SatSolver.Strategy
                 {
                     var variables = clause.Variables.Select(item => new VariableDto(item)).ToList();
                     if (variables.All(variable =>
-                        solution[variable.Index].HasValue && solution[variable.Index] != variable.IsPositive))
+                        presence[variable.Index] && solution[variable.Index] != variable.IsPositive))
                     {
-                        return (solution, false);
+                        return false;
                     }
                     if (variables.Any(variable =>
-                        solution[variable.Index].HasValue && solution[variable.Index] == variable.IsPositive))
+                        presence[variable.Index] && solution[variable.Index] == variable.IsPositive))
                     {
                         continue;
                     }
-                    var undecided = variables.Where(variable => solution[variable.Index] == null).ToList();
+                    var undecided = variables.Where(variable => !presence[variable.Index]).ToList();
                     if (undecided.Count == 1)
                     {
                         var variable = undecided.Single();
                         solution[variable.Index] = variable.IsPositive;
+                        presence[variable.Index] = true;
                         hasChanged = true;
                     }
                 }
             } while (hasChanged);
 
-            return (solution,true);
+            return true;
         }
 
-        private void SetPureVariable(SatDefinitionDto definition, IList<bool?> solution)
+        private void SetPureVariable(SatDefinitionDto definition, BitArray solution, BitArray presence)
         {
             var exceptSet = new HashSet<int>();
-            var refernces = Enumerable.Repeat((bool?)null, definition.VariableCount).ToList();
+            var refernces = new BitArray(definition.VariableCount);
+            var referncesSet = new BitArray(definition.VariableCount);
             foreach (var clause in definition.Clauses)
             {
                 foreach (var variable in clause.Variables.Select(item => new VariableDto(item)))
                 {
-                    if (!refernces[variable.Index].HasValue)
+                    if (!referncesSet[variable.Index])
                     {
                         refernces[variable.Index] = variable.IsPositive;
+                        referncesSet[variable.Index] = true;
                     }
-                    else if (refernces[variable.Index].Value != variable.IsPositive)
+                    else if (refernces[variable.Index] != variable.IsPositive)
                     {
                         exceptSet.Add(variable.Index);
                     }
@@ -93,20 +98,21 @@ namespace SatSolver.Strategy
 
             for (int index = 0; index < definition.VariableCount; index++)
             {
-                if (exceptSet.Contains(index) || !refernces[index].HasValue)
+                if (exceptSet.Contains(index) || !referncesSet[index])
                 {
                     continue;
                 }
 
                 solution[index] = refernces[index];
+                presence[index] = true;
             }
         }
 
-        private int? GetNextPosition(IList<bool?> solution)
+        private int? GetNextPosition(BitArray solution)
         {
             for (int index = 0; index < solution.Count; index++)
             {
-                if (!solution[index].HasValue)
+                if (!solution[index])
                 {
                     return index;
                 }
@@ -115,22 +121,26 @@ namespace SatSolver.Strategy
             return null;
         }
 
-        private IList<bool> FindSolution(SatDefinitionDto definition, IList<bool?> solution, int nextPosition, bool nextValue)
+        private BitArray FindSolution(SatDefinitionDto definition, BitArray solution, BitArray presence, int nextPosition, bool nextValue)
         {
-            var nextWithTrue = new List<bool?>(solution)
+            var nextWithTrue = new BitArray(solution)
             {
                 [nextPosition] = nextValue
             };
-            var isSatisfiableWith = IsSatisfiable(definition, nextWithTrue);
+            var newPresence = new BitArray(presence)
+            {
+                [nextPosition] = true
+            };
+            var isSatisfiableWith = IsSatisfiable(definition, nextWithTrue, newPresence);
             if (isSatisfiableWith.Satisfaction == ESatisfaction.All)
             {
                 // All are already satisfied
-                return nextWithTrue.Select(item => item ?? true).ToList();
+                return nextWithTrue;
             }
             if (isSatisfiableWith.Satisfaction == ESatisfaction.Some)
             {
                 // Evaluation is partial and no conflicting clauses found 
-                var solutionWith = Solve(definition, nextWithTrue);
+                var solutionWith = Solve(definition, nextWithTrue, newPresence);
                 if (solutionWith != null)
                 {
                     return solutionWith;

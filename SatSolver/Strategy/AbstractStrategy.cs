@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using SatSolver.Dtos;
 
@@ -7,17 +7,17 @@ namespace SatSolver.Strategy
 {
     public abstract class AbstractStrategy : IStrategy
     {
-        public abstract IList<bool> Solve(SatDefinitionDto definition);
+        public abstract BitArray Solve(SatDefinitionDto definition);
         public abstract string Id { get; }
 
 
-        protected bool? IsSatisfiable(IList<bool?> partialSolution, ClausesDto clause)
+        protected bool? IsSatisfiable(BitArray partialSolution, BitArray presence, ClausesDto clause)
         {
             bool? isAnyVariableSatisfied = false;
             foreach (var variable in clause.Variables.Select(item => new VariableDto(item)))
             {
 
-                if (!partialSolution[variable.Index].HasValue)
+                if (!presence[variable.Index])
                 {
                     isAnyVariableSatisfied = null;
                     continue;
@@ -33,14 +33,14 @@ namespace SatSolver.Strategy
             return isAnyVariableSatisfied;
         }
 
-        protected ResultDto IsSatisfiable(SatDefinitionDto definition, IList<bool?> partialSolution)
+        protected ResultDto IsSatisfiable(SatDefinitionDto definition, BitArray partialSolution, BitArray presence)
         {
             var isAnyFailed = false;
             var counter = 0;
             var areAllClausesSatisfied = true;
             foreach (var clause in definition.Clauses)
             {
-                bool? isAnyVariableSatisfied = IsSatisfiable(partialSolution, clause);
+                bool? isAnyVariableSatisfied = IsSatisfiable(partialSolution, presence, clause);
 
                 if (isAnyVariableSatisfied == false)
                 {
@@ -60,22 +60,11 @@ namespace SatSolver.Strategy
                 ? ESatisfaction.All
                 : ESatisfaction.Some);
         }
-
-        protected static List<bool> GetResult(IList<bool?> solution)
-        {
-            return solution.Select(item => item ?? false).ToList();
-        }
-
+        
         protected class VariableDto
         {
             public int Index { get; set; }
             public bool IsPositive { get; set; }
-
-            public VariableDto(int index, bool isPositive)
-            {
-                Index = index;
-                IsPositive = isPositive;
-            }
 
             public VariableDto(int variable)
             {

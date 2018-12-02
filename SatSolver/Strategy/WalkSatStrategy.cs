@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using SatSolver.Dtos;
 
@@ -18,17 +18,18 @@ namespace SatSolver.Strategy
         private int MaxProbes { get; set; }
         private int Probability { get; set; }
 
-        public override IList<bool> Solve(SatDefinitionDto definition)
+        public override BitArray Solve(SatDefinitionDto definition)
         {
             Random generator = new Random();
+            var presence = new BitArray(definition.VariableCount, true);
             for (int probe = 0; probe < MaxProbes; probe++)
             {
                 var solution = CreateRandomSolution(definition, generator);
                 for (int flip = 0; flip < definition.VariableCount * 2; flip++)
                 {
-                    if (IsSatisfiable(definition, solution).Satisfaction == ESatisfaction.All)
+                    if (IsSatisfiable(definition, solution, presence).Satisfaction == ESatisfaction.All)
                     {
-                        return solution.Select(item => item ?? false).ToList();
+                        return solution;
                     }
 
                     var selectedFailedClause = GetFailedClauses(definition, generator, solution);
@@ -42,38 +43,40 @@ namespace SatSolver.Strategy
             return null;
         }
 
-        private ClausesDto GetFailedClauses(SatDefinitionDto definition, Random generator, IList<bool?> solution)
+        private ClausesDto GetFailedClauses(SatDefinitionDto definition, Random generator, BitArray solution)
         {
-            var failedClauses = definition.Clauses.Where(clause => IsSatisfiable(solution, clause) == false).ToList();
+            var presence = new BitArray(definition.VariableCount,true);
+            var failedClauses = definition.Clauses.Where(clause => IsSatisfiable(solution, presence, clause) == false).ToList();
             var selectedFailedClause = failedClauses[generator.Next(0, failedClauses.Count)];
             return selectedFailedClause;
         }
 
-        private static IList<bool?> CreateRandomSolution(SatDefinitionDto definition, Random generator)
+        private static BitArray CreateRandomSolution(SatDefinitionDto definition, Random generator)
         {
-            IList<bool?> solution = new List<bool?>();
+            var solution = new BitArray(definition.VariableCount);
             for (int variableIndex = 0; variableIndex < definition.VariableCount; variableIndex++)
             {
-                solution.Add(generator.Next(1, 100) > 50);
+                solution[variableIndex] = generator.Next(1, 100) > 50;
             }
 
             return solution;
         }
 
-        private IList<bool?> FlipRandomVariable(IList<bool?> solution, ClausesDto selectedClause, int next)
+        private BitArray FlipRandomVariable(BitArray solution, ClausesDto selectedClause, int next)
         {
             var targetIndex = new VariableDto(selectedClause.Variables[next]).Index;
-            return new List<bool?>(solution) { [targetIndex] = !solution[targetIndex] };
+            return new BitArray(solution) { [targetIndex] = !solution[targetIndex] };
         }
 
-        private IList<bool?> FlipMostSatisfiableVariable(SatDefinitionDto definition, IList<bool?> solution, ClausesDto selectedClause)
+        private BitArray FlipMostSatisfiableVariable(SatDefinitionDto definition, BitArray solution, ClausesDto selectedClause)
         {
-            var max = new { Counter = -1, Solution = default(IList<bool?>) };
+            var max = new { Counter = -1, Solution = default(BitArray) };
+            var presence = new BitArray(definition.VariableCount, true);
             foreach (var variable in selectedClause.Variables.Select(item => new VariableDto(item)))
             {
-                IList<bool?> flipped = new List<bool?>(solution) { [variable.Index] = !solution[variable.Index] };
+                var flipped = new BitArray(solution) { [variable.Index] = !solution[variable.Index] };
 
-                var satisfiedClauses = IsSatisfiable(definition, flipped);
+                var satisfiedClauses = IsSatisfiable(definition, flipped, presence);
                 if (satisfiedClauses.Counter > max.Counter)
                 {
                     max = new { satisfiedClauses.Counter, Solution = flipped };

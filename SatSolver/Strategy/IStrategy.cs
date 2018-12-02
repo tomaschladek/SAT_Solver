@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
 using SatSolver.Dtos;
 
 namespace SatSolver.Strategy
 {
     public interface IStrategy
     {
-        IList<bool> Solve(SatDefinitionDto definition);
+        BitArray Solve(SatDefinitionDto definition);
 
         string Id { get; }
     }
