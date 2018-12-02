@@ -2,23 +2,41 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using SatSolver.Dtos;
+using SatSolver.Services;
 using SatSolver.Strategy;
 
 namespace SatSolver
 {
     class Program
     {
+        private static IReadSatManager _reader;
 
         static void Main(string[] args)
         {
-            var definitions = GetInputs().ToList();
+            _reader = new ReadSatManager();
+            var mode = EMode.Execution;
+            switch (mode)
+            {
+                case EMode.Generation:
+                    new InstanceGenerator().Generate(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\", "Weighted");
+                    break;
+                case EMode.Execution:
+                    Execute(args);
+                    break;
+            }
+        }
+
+        private static void Execute(string[] args)
+        {
+            var definitions = GetInputs(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\Weighted\", 10).ToList();
             var strategy = new DpllStrategy();
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            for (int repetition = 0; repetition < 50; repetition++)
+            for (int repetition = 0; repetition < 100; repetition++)
             {
                 foreach (var definition in definitions)
                 {
@@ -32,19 +50,12 @@ namespace SatSolver
             Console.ReadLine();
         }
 
-        private static IEnumerable<SatDefinitionDto> GetInputs()
+        private static IEnumerable<SatDefinitionDto> GetInputs(string folder, int takeCount)
         {
-            IReadSatManager reader = new ReadSatManager();
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-01.cnf");
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-02.cnf");
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-03.cnf");
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-04.cnf");
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-05.cnf");
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-06.cnf");
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-07.cnf");
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-08.cnf");
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-09.cnf");
-            yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-010.cnf");
+            foreach (var file in Directory.GetFiles(folder).Take(takeCount))
+            {
+                yield return _reader.ReadDefinition(file);
+            }
         }
 
         public static string PrintSolution(BitArray solution)
@@ -52,6 +63,11 @@ namespace SatSolver
             return solution == null
                             ? "No solution found!"
                             : string.Join(' ', Enumerable.Range(0,solution.Count).Select(index => solution[index] ? index + 1 : -(index + 1)));
+        }
+
+        private enum EMode
+        {
+            Generation,Execution
         }
     }
 }
