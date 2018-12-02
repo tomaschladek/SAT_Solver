@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using SatSolver.Dtos;
 using SatSolver.Strategy;
 
 namespace SatSolver
@@ -29,7 +30,7 @@ namespace SatSolver
 
         private static IEnumerable<SatDefinitionDto> GetInputs()
         {
-            var reader = new ReadSatManager();
+            IReadSatManager reader = new ReadSatManager();
             yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-01.cnf");
             yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-02.cnf");
             yield return reader.ReadDefinition(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-03.cnf");

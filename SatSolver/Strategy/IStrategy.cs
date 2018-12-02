@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using SatSolver.Dtos;
 
 namespace SatSolver.Strategy
 {
