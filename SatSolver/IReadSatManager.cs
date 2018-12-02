@@ -14,11 +14,11 @@ namespace SatSolver
     {
         public SatDefinitionDto ReadDefinition(string fullName)
         {
-            string line;
             SatDefinitionDto definition = null;
             // Read the file and display it line by line.  
             using (var file = new StreamReader(fullName))
             {
+                string line;
                 while ((line = file.ReadLine()) != null)
                 {
                     definition = ProcessLine(line, definition, fullName);
@@ -33,6 +33,17 @@ namespace SatSolver
         {
             if (line.StartsWith("c") || line.StartsWith("%") || line.StartsWith("0") || string.IsNullOrEmpty(line))
             {
+                return definition;
+            }
+
+            if (line.StartsWith("w"))
+            {
+                definition.Weights = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Select(int.Parse).ToList();
+                if (definition.Weights.Count != definition.VariableCount)
+                {
+                    throw new ArgumentException($"Expected {definition.VariableCount} but {definition.Weights.Count} provided!");
+                }
+
                 return definition;
             }
 
@@ -53,8 +64,9 @@ namespace SatSolver
 
     public class SatDefinitionDto
     {
-        public string FullName { get; }
+        private string FullName { get; }
         public int VariableCount { get; }
+        public IList<int> Weights { get; set; }
         public List<ClausesDto> Clauses { get; }
 
         public SatDefinitionDto(string fullName, int variableCount,int count)
@@ -62,6 +74,7 @@ namespace SatSolver
             FullName = fullName;
             VariableCount = variableCount;
             Clauses = new List<ClausesDto>(count);
+            Weights = Enumerable.Repeat(1,VariableCount).ToList();
         }
     }
 

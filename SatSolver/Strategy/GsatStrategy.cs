@@ -26,7 +26,7 @@ namespace SatSolver.Strategy
 
                     if (IsSatisfiable(definition, solution).Satisfaction == ESatisfaction.All)
                     {
-                        return solution.Select(item => item.Value).ToList();
+                        return solution.Select(item => item ?? false).ToList();
                     }
 
                     solution = FlipVariableWithMostSatisfiedClauses(definition, solution);

@@ -62,10 +62,10 @@ namespace SatSolver.Strategy
 
         protected static List<bool> GetResult(IList<bool?> solution)
         {
-            return solution.Select(item => item.Value).ToList();
+            return solution.Select(item => item ?? false).ToList();
         }
 
-        public class VariableDto
+        protected class VariableDto
         {
             public int Index { get; set; }
             public bool IsPositive { get; set; }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace SatSolver.Strategy
@@ -20,7 +19,7 @@ namespace SatSolver.Strategy
             if (nextPosition == null)
             {
                 // All fields filled - END condition
-                return solution.Select(item => item.Value).ToList();
+                return solution.Select(item => item ?? false).ToList();
             }
 
             return FindSolution(definition, solution, nextPosition.Value, true)
