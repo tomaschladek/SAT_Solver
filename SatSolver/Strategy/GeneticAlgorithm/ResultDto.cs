@@ -1,11 +1,11 @@
 ﻿namespace SatSolver.Strategy.GeneticAlgorithm
 {
-    public class ResultDto
+    public class FormulaResultDto
     {
         public int Counter { get; set; }
         public ESatisfaction Satisfaction { get; set; }
 
-        public ResultDto(int counter, ESatisfaction satisfaction)
+        public FormulaResultDto(int counter, ESatisfaction satisfaction)
         {
             Counter = counter;
             Satisfaction = satisfaction;

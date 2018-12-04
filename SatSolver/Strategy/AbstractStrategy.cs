@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using SatSolver.Dtos;
-using SatSolver.Strategy.GeneticAlgorithm;
 
 namespace SatSolver.Strategy
 {

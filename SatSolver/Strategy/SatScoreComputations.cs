@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using SatSolver.Dtos;
+using SatSolver.Strategy.GeneticAlgorithm;
 
-namespace SatSolver.Strategy.GeneticAlgorithm
+namespace SatSolver.Strategy
 {
     public class SatScoreComputations
     {
@@ -15,7 +16,7 @@ namespace SatSolver.Strategy.GeneticAlgorithm
             return (maxWeight - definition.VariableCount, result.Item1.Item1);
         }
 
-        private IEnumerable<((BitArray item, ResultDto) item, long)> GetBests(SatDefinitionDto definition, List<BitArray> generation)
+        private IEnumerable<((BitArray item, FormulaResultDto) item, long)> GetBests(SatDefinitionDto definition, List<BitArray> generation)
         {
             var scoredFormulas = GetScores(definition, generation).ToList();
             var maxSatisfiedClauses = scoredFormulas.Max(item => item.Item1.Item2.Counter);
@@ -23,7 +24,7 @@ namespace SatSolver.Strategy.GeneticAlgorithm
                 .Where(item => item.Item1.Item2.Counter == maxSatisfiedClauses);
         }
 
-        public IEnumerable<((BitArray item, ResultDto) item, long)> GetScores(SatDefinitionDto definition, List<BitArray> generation)
+        public IEnumerable<((BitArray item, FormulaResultDto) item, long)> GetScores(SatDefinitionDto definition, List<BitArray> generation)
         {
             var presence = new BitArray(definition.VariableCount);
             return generation
@@ -69,7 +70,7 @@ namespace SatSolver.Strategy.GeneticAlgorithm
             return isAnyVariableSatisfied;
         }
 
-        public ResultDto IsSatisfiable(SatDefinitionDto definition, BitArray partialSolution, BitArray presence)
+        public FormulaResultDto IsSatisfiable(SatDefinitionDto definition, BitArray partialSolution, BitArray presence)
         {
             var isAnyFailed = false;
             var counter = 0;
@@ -92,7 +93,7 @@ namespace SatSolver.Strategy.GeneticAlgorithm
                 }
             }
 
-            return new ResultDto(counter, isAnyFailed ? ESatisfaction.NotSatisfiedExists : areAllClausesSatisfied
+            return new FormulaResultDto(counter, isAnyFailed ? ESatisfaction.NotSatisfiedExists : areAllClausesSatisfied
                 ? ESatisfaction.All
                 : ESatisfaction.Some);
         }
