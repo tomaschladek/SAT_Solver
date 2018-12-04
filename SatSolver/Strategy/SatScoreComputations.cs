@@ -13,7 +13,7 @@ namespace SatSolver.Strategy
             var candidates = GetBests(definition, generation).ToList();
             var maxWeight = candidates.Max(item => item.Item2);
             var result = candidates.First(item => item.Item2 == maxWeight);
-            return (maxWeight - definition.VariableCount, result.Item1.Item1);
+            return (maxWeight, result.Item1.Item1);
         }
 
         private IEnumerable<((BitArray item, FormulaResultDto) item, long)> GetBests(SatDefinitionDto definition, List<BitArray> generation)
@@ -26,13 +26,13 @@ namespace SatSolver.Strategy
 
         public IEnumerable<((BitArray item, FormulaResultDto) item, long)> GetScores(SatDefinitionDto definition, List<BitArray> generation)
         {
-            var presence = new BitArray(definition.VariableCount);
+            var presence = new BitArray(definition.VariableCount, true);
             return generation
                 .Select(item => (item, IsSatisfiable(definition, item, presence)))
                 .Select(item => (item,
                     item.Item2.Satisfaction == ESatisfaction.All
                         ? GetScoreItem(item.Item1, definition)
-                        : item.Item2.Counter));
+                        : item.Item2.Counter - definition.Clauses.Count));
         }
 
         public long GetScoreItem(BitArray fenotyp, SatDefinitionDto definition)

@@ -83,11 +83,16 @@ namespace SatSolverUnitTests
             [Test]
             public void ParseCorrectDefinition()
             {
-                var definition = new SatDefinitionDto(5,3);
-                definition.Weights = new List<int>{1,2,3,4,5};
-                definition.Clauses.Add(new ClausesDto(new List<int>{1,-2,3}));
-                definition.Clauses.Add(new ClausesDto(new List<int>{2,-3,4}));
-                definition.Clauses.Add(new ClausesDto(new List<int>{3,-4,5}));
+                var definition = new SatDefinitionDto(5, 3)
+                {
+                    Weights = new List<int> {1, 2, 3, 4, 5},
+                    Clauses =
+                    {
+                        new ClausesDto(new List<int> { 1, -2, 3}),
+                        new ClausesDto(new List<int> { 2, -3, 4 }),
+                        new ClausesDto(new List<int> { 3, -4, 5 })
+                    }
+                };
 
                 ReadSatManager.WriteDefinition(definition,string.Empty);
 
