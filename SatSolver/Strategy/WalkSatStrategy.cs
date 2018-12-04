@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Linq;
 using SatSolver.Dtos;
+using SatSolver.Strategy.GeneticAlgorithm;
 
 namespace SatSolver.Strategy
 {
@@ -27,7 +28,7 @@ namespace SatSolver.Strategy
                 var solution = CreateRandomSolution(definition, generator);
                 for (int flip = 0; flip < definition.VariableCount * 2; flip++)
                 {
-                    if (IsSatisfiable(definition, solution, presence).Satisfaction == ESatisfaction.All)
+                    if (ScoreComputation.IsSatisfiable(definition, solution, presence).Satisfaction == ESatisfaction.All)
                     {
                         return solution;
                     }
@@ -46,7 +47,7 @@ namespace SatSolver.Strategy
         private ClausesDto GetFailedClauses(SatDefinitionDto definition, Random generator, BitArray solution)
         {
             var presence = new BitArray(definition.VariableCount,true);
-            var failedClauses = definition.Clauses.Where(clause => IsSatisfiable(solution, presence, clause) == false).ToList();
+            var failedClauses = definition.Clauses.Where(clause => ScoreComputation.IsSatisfiable(solution, presence, clause) == false).ToList();
             var selectedFailedClause = failedClauses[generator.Next(0, failedClauses.Count)];
             return selectedFailedClause;
         }
@@ -76,7 +77,7 @@ namespace SatSolver.Strategy
             {
                 var flipped = new BitArray(solution) { [variable.Index] = !solution[variable.Index] };
 
-                var satisfiedClauses = IsSatisfiable(definition, flipped, presence);
+                var satisfiedClauses = ScoreComputation.IsSatisfiable(definition, flipped, presence);
                 if (satisfiedClauses.Counter > max.Counter)
                 {
                     max = new { satisfiedClauses.Counter, Solution = flipped };

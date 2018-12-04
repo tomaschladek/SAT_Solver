@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using SatSolver.Dtos;
+using SatSolver.Strategy.GeneticAlgorithm;
 
 namespace SatSolver.Strategy
 {
@@ -25,7 +26,7 @@ namespace SatSolver.Strategy
                 for (int flip = 0; flip < definition.VariableCount / 2; flip++)
                 {
 
-                    if (IsSatisfiable(definition, solution, presence).Satisfaction == ESatisfaction.All)
+                    if (ScoreComputation.IsSatisfiable(definition, solution, presence).Satisfaction == ESatisfaction.All)
                     {
                         return solution;
                     }
@@ -60,7 +61,7 @@ namespace SatSolver.Strategy
                     [flipIndex] = !solution[flipIndex]
                 };
 
-                var satisfiedClauses = IsSatisfiable(definition, flipped, presence);
+                var satisfiedClauses = ScoreComputation.IsSatisfiable(definition, flipped, presence);
                 if (satisfiedClauses.Counter > max.Counter)
                 {
                     max = new {satisfiedClauses.Counter, Solution = flipped};

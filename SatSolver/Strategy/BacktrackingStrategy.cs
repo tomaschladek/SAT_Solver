@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using SatSolver.Dtos;
+using SatSolver.Strategy.GeneticAlgorithm;
 
 namespace SatSolver.Strategy
 {
@@ -50,7 +51,7 @@ namespace SatSolver.Strategy
             {
                 [nextPosition] = true
             };
-            var isSatisfiableWith = IsSatisfiable(definition, nextWithTrue, newPresence);
+            var isSatisfiableWith = ScoreComputation.IsSatisfiable(definition, nextWithTrue, newPresence);
             if (isSatisfiableWith.Satisfaction == ESatisfaction.All)
             {
                 // All are already satisfied
