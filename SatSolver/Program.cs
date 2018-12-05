@@ -45,7 +45,7 @@ namespace SatSolver
         private static void Execute(IStrategy strategy)
         {
             var definitions = GetInputs(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\Weighted\", 10).ToList();
-            var duration = _executor.Execute(strategy, definitions);
+            var duration = _executor.Execute(strategy, definitions, @"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\PAA\SAT\Experiment.csv");
             Console.WriteLine($"Duration: {duration}");
             Console.WriteLine($"=====================================");
             Console.ReadLine();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using SatSolver.Dtos;
 using SatSolver.Strategy.GeneticAlgorithm.Crossing;
@@ -32,6 +31,11 @@ namespace SatSolver.Strategy.GeneticAlgorithm
 
         public override BitArray Solve(SatDefinitionDto definition)
         {
+            return Execute(definition).Last().Item2;
+        }
+
+        public override IEnumerable<(long, BitArray)> Execute(SatDefinitionDto definition)
+        {
             var random = new Random();
             var generation = InitializeGeneration(definition.VariableCount, random).ToList();
 
@@ -43,12 +47,8 @@ namespace SatSolver.Strategy.GeneticAlgorithm
                 Mutation(random, generationNew);
 
                 generation = generationNew;
-                var currentResult = ScoreComputation.GetBest(definition, generation);
-                Debug.WriteLine($"{generationIndex}\t{currentResult.Item1}");
+                yield return ScoreComputation.GetBest(definition, generation);
             }
-
-            var result = ScoreComputation.GetBest(definition, generation);
-            return result.Item2;
         }
 
         private void Mutation(Random random, List<BitArray> generationNew)

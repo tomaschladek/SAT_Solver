@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using SatSolver.Dtos;
-using SatSolver.Services;
 
-namespace SatSolver
+namespace SatSolver.Services
 {
     public class ReadSatManager : IReadSatManager
     {
@@ -17,13 +18,14 @@ namespace SatSolver
         public SatDefinitionDto ReadDefinition(string fullName)
         {
             SatDefinitionDto definition = null;
+            var fileName = Path.GetFileName(fullName);
             // Read the file and display it line by line.  
             using (var file = IoProvider.GetFileReader(fullName))
             {
                 string line;
                 while ((line = file.ReadLine()) != null)
                 {
-                    definition = ProcessLine(line, definition);
+                    definition = ProcessLine(line, definition, fileName);
                 }
                 file.Close();
             }
@@ -31,7 +33,7 @@ namespace SatSolver
             return definition;
         }
 
-        private SatDefinitionDto ProcessLine(string line, SatDefinitionDto definition)
+        private SatDefinitionDto ProcessLine(string line, SatDefinitionDto definition, string fileName)
         {
             if (line.StartsWith("c") || line.StartsWith("%") || line.StartsWith("0") || string.IsNullOrEmpty(line))
             {
@@ -54,7 +56,7 @@ namespace SatSolver
                 var properties = line.Split(' ',StringSplitOptions.RemoveEmptyEntries);
                 var variableCount = int.Parse(properties[2]);
                 var clausesCount = int.Parse(properties[3]);
-                return new SatDefinitionDto(variableCount,clausesCount);
+                return new SatDefinitionDto(fileName,variableCount, clausesCount);
             }
 
             var variables = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
@@ -78,6 +80,12 @@ namespace SatSolver
                     file.WriteLine(string.Join(" ", clause.Variables.Select(variable => variable.ToString()).Concat(new[] { 0.ToString() })));
                 }
             }
+        }
+
+        public void AppendFile(string path, IEnumerable<string> data)
+        {
+            var value = string.Join("\t", data);
+            File.AppendAllText(path, $"{value}{Environment.NewLine}");
         }
     }
 }

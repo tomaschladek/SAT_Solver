@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using Moq;
 using NUnit.Framework;
-using SatSolver;
 using SatSolver.Dtos;
 using SatSolver.Services;
 
@@ -83,7 +82,7 @@ namespace SatSolverUnitTests
             [Test]
             public void ParseCorrectDefinition()
             {
-                var definition = new SatDefinitionDto(5, 3)
+                var definition = new SatDefinitionDto("",5, 3)
                 {
                     Weights = new List<int> {1, 2, 3, 4, 5},
                     Clauses =

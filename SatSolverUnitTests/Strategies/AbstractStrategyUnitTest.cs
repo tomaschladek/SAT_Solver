@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using SatSolver;
+using SatSolver.Services;
 
 namespace SatSolverUnitTests.Strategies
 {

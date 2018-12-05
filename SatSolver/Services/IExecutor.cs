@@ -9,12 +9,13 @@ namespace SatSolver.Services
 {
     public interface IExecutor
     {
-        double Execute(IStrategy strategy, IList<SatDefinitionDto> definitions);
+        double Execute(IStrategy strategy, IList<SatDefinitionDto> definitions, string fullPath);
     }
 
     public class Executor : IExecutor
     {
-        public double Execute(IStrategy strategy, IList<SatDefinitionDto> definitions)
+        private IReadSatManager _provider = new ReadSatManager();
+        public double Execute(IStrategy strategy, IList<SatDefinitionDto> definitions, string fullPath)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -22,7 +23,8 @@ namespace SatSolver.Services
             {
                 foreach (var definition in definitions)
                 {
-                    strategy.Solve(definition);
+                    var series = strategy.Execute(definition).ToList();
+                    _provider.AppendFile(fullPath, new []{ definition.FileName }.Concat(series.Select(item => item.Item1.ToString())));
                 }
             }
             stopwatch.Stop();

@@ -27,7 +27,7 @@ namespace SatSolverUnitTests.Strategies
             [SetUp]
             public void SetUp()
             {
-                _definition = new SatDefinitionDto(5, 3)
+                _definition = new SatDefinitionDto("", 5, 3)
                 {
                     Weights = new List<int> { 1, 2, 3, 4, 5 },
                     Clauses =
