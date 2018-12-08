@@ -47,7 +47,8 @@ namespace SatSolver.Strategy.GeneticAlgorithm
                 Mutation(random, generationNew);
 
                 generation = generationNew;
-                yield return ScoreComputation.GetBest(definition, generation);
+                var scoreTuple = ScoreComputation.GetBest(definition, generation);
+                yield return (scoreTuple.Item1 - definition.Clauses.Count,scoreTuple.Item2);
             }
         }
 

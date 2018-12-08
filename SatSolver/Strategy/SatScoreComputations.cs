@@ -31,8 +31,8 @@ namespace SatSolver.Strategy
                 .Select(item => (item, IsSatisfiable(definition, item, presence)))
                 .Select(item => (item,
                     item.Item2.Satisfaction == ESatisfaction.All
-                        ? GetScoreItem(item.Item1, definition)
-                        : item.Item2.Counter - definition.Clauses.Count));
+                        ? GetScoreItem(item.Item1, definition) + definition.Clauses.Count
+                        : item.Item2.Counter));
         }
 
         public long GetScoreItem(BitArray fenotyp, SatDefinitionDto definition)

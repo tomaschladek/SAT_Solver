@@ -82,7 +82,7 @@ namespace SatSolver.Services
             }
         }
 
-        public void AppendFile(string path, IEnumerable<string> data)
+        public void AppendFile(string path, params string[] data)
         {
             var value = string.Join("\t", data);
             File.AppendAllText(path, $"{value}{Environment.NewLine}");

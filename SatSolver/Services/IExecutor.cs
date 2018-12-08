@@ -19,12 +19,12 @@ namespace SatSolver.Services
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            for (int repetition = 0; repetition < 100; repetition++)
+            foreach (var definition in definitions)
             {
-                foreach (var definition in definitions)
+                for (int repetition = 1; repetition <= 10; repetition++)
                 {
                     var series = strategy.Execute(definition).ToList();
-                    _provider.AppendFile(fullPath, new []{ definition.FileName }.Concat(series.Select(item => item.Item1.ToString())));
+                    _provider.AppendFile(fullPath, new []{ $"{definition.FileName}-Run{repetition}" }.Concat(series.Select(item => item.Item1.ToString())).ToArray());
                 }
             }
             stopwatch.Stop();

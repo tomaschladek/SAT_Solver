@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using SatSolver.Dtos;
+﻿using SatSolver.Dtos;
 
 namespace SatSolver.Services
 {
@@ -8,6 +7,6 @@ namespace SatSolver.Services
         SatDefinitionDto ReadDefinition(string fullName);
 
         void WriteDefinition(SatDefinitionDto definition, string fullName);
-        void AppendFile(string path, IEnumerable<string> data);
+        void AppendFile(string path, params string[] data);
     }
 }
