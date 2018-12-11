@@ -131,7 +131,7 @@ namespace SatSolverSdk.Strategy
             {
                 [nextPosition] = true
             };
-            var isSatisfiableWith = ScoreComputation.IsSatisfiable(definition, nextWithTrue, newPresence);
+            var isSatisfiableWith = ScoreComputation.IsSatisfiable(definition, nextWithTrue, newPresence, Cache);
             if (isSatisfiableWith.Satisfaction == ESatisfaction.All)
             {
                 // All are already satisfied

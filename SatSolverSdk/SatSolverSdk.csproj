@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dtos\BitVectorDto.cs" />
     <Compile Include="Dtos\ClausesDto.cs" />
     <Compile Include="Dtos\SatDefinitionDto.cs" />
     <Compile Include="Program.cs" />

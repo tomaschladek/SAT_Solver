@@ -23,7 +23,8 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
 
         private int TournamentSize { get; set; }
 
-        protected override IEnumerable<BitArray> SelectByCriteria(SatDefinitionDto definition, Random random, List<BitArray> generation)
+        protected override IEnumerable<BitArray> SelectByCriteria(SatDefinitionDto definition, Random random,
+            List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache)
         {
             for (int index = StartCount; index < generation.Count; index++)
             {
@@ -32,7 +33,7 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
                     {
                         Index = tournamentInde,
                         Fenotyp = fenotyp,
-                        Score = ScoreComputation.GetScores(definition, new List<BitArray>{fenotyp}).Single()
+                        Score = ScoreComputation.GetScores(definition, new List<BitArray>{fenotyp},cache).Single()
                     })
                     .ToList();
                 var maxScore = tournament.Max(item => item.Score.Item2);

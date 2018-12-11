@@ -23,10 +23,11 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
         protected int WeakestsCount { get; set; }
         public int StartCount { get; set; }
 
-        private IEnumerable<BitArray> SelectElites(SatDefinitionDto definition, List<BitArray> generation)
+        private IEnumerable<BitArray> SelectElites(SatDefinitionDto definition, List<BitArray> generation,
+            IDictionary<BitArray, FormulaResultDto> cache)
         {
             var elites = ScoreComputation
-                .GetScores(definition, generation)
+                .GetScores(definition, generation,cache)
                 .OrderByDescending(tuple => tuple.Item2)
                 .Take(ElitesCount).ToArray();
 
@@ -35,27 +36,29 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
             return elites.Select(item => item.item.item);
         }
 
-        private IEnumerable<BitArray> RemoveWeakests(SatDefinitionDto definition, List<BitArray> generation)
+        private IEnumerable<BitArray> RemoveWeakests(SatDefinitionDto definition, List<BitArray> generation,
+            IDictionary<BitArray, FormulaResultDto> cache)
         {
             return ScoreComputation
-                .GetScores(definition, generation)
+                .GetScores(definition, generation, cache)
                 .OrderBy(tuple => tuple.Item2)
                 .Skip(WeakestsCount)
                 .Select(item => item.item.item);
         }
 
 
-        public IEnumerable<BitArray> Select(SatDefinitionDto definition, Random random, List<BitArray> generation)
+        public IEnumerable<BitArray> Select(SatDefinitionDto definition, Random random, List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache)
         {
             var correctedGeneration = CorrectionStrategy.CorrectGeneration(definition, generation).ToList();
-            var elites = SelectElites(definition, correctedGeneration).ToList();
-            var childrenByScore = SelectByCriteria(definition, random, generation);
-            var result = RemoveWeakests(definition, elites.Concat(childrenByScore).ToList());
-            return result;
+            var elites = SelectElites(definition, correctedGeneration, cache).ToList();
+            var childrenByScore = SelectByCriteria(definition, random, generation, cache);
+            //var result = RemoveWeakests(definition, elites.Concat(childrenByScore).ToList());
+            return elites.Concat(childrenByScore);
         }
 
         public abstract string Id { get; }
 
-        protected abstract IEnumerable<BitArray> SelectByCriteria(SatDefinitionDto definition, Random random, List<BitArray> generation);
+        protected abstract IEnumerable<BitArray> SelectByCriteria(SatDefinitionDto definition, Random random,
+            List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache);
     }
 }

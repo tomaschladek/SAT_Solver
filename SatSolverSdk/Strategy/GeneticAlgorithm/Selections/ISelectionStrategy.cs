@@ -7,7 +7,7 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
 {
     public interface ISelectionStrategy
     {
-        IEnumerable<BitArray> Select(SatDefinitionDto definition, Random random, List<BitArray> generation);
+        IEnumerable<BitArray> Select(SatDefinitionDto definition, Random random, List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache);
         string Id { get; }
     }
 }

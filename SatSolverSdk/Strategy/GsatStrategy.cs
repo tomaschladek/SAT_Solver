@@ -25,7 +25,7 @@ namespace SatSolverSdk.Strategy
                 for (int flip = 0; flip < definition.VariableCount / 2; flip++)
                 {
 
-                    if (ScoreComputation.IsSatisfiable(definition, solution, presence).Satisfaction == ESatisfaction.All)
+                    if (ScoreComputation.IsSatisfiable(definition, solution, presence, Cache).Satisfaction == ESatisfaction.All)
                     {
                         return solution;
                     }
@@ -60,7 +60,7 @@ namespace SatSolverSdk.Strategy
                     [flipIndex] = !solution[flipIndex]
                 };
 
-                var satisfiedClauses = ScoreComputation.IsSatisfiable(definition, flipped, presence);
+                var satisfiedClauses = ScoreComputation.IsSatisfiable(definition, flipped, presence, Cache);
                 if (satisfiedClauses.Counter > max.Counter)
                 {
                     max = new {satisfiedClauses.Counter, Solution = flipped};

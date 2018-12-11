@@ -45,14 +45,14 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
 
             for (var generationIndex = 0; generationIndex < Generations; generationIndex++)
             {
-                var generationSelection = SelectionStrategy.Select(definition, random, generation).ToList();
+                var generationSelection = SelectionStrategy.Select(definition, random, generation, Cache).ToList();
                 var generationNew = CrossStrategy.Cross(definition.VariableCount, random, generationSelection, PopulationSize, CrossoverProbability).ToList();
 
                 Mutation(random, generationNew, definition);
 
                 generation = generationNew;
-                var scoreTuple = ScoreComputation.GetBest(definition, generation);
-                yield return (ScoreComputation.GetClearScores(definition,scoreTuple.Item2).Item2 - definition.Clauses.Count,scoreTuple.Item2);
+                var scoreTuple = ScoreComputation.GetBest(definition, generation, Cache);
+                yield return (ScoreComputation.GetClearScores(definition,scoreTuple.Item2, Cache).Item2 - definition.Clauses.Count,scoreTuple.Item2);
             }
         }
 
@@ -60,7 +60,7 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
         {
             var generations = AreElitesMutated
                 ? generationNew
-                : generationNew.OrderByDescending(item => ScoreComputation.GetClearScores(definition, item).Item2).Skip(((AbstractSelectionStrategy)SelectionStrategy).StartCount);
+                : generationNew.OrderByDescending(item => ScoreComputation.GetClearScores(definition, item, Cache).Item2).Skip(((AbstractSelectionStrategy)SelectionStrategy).StartCount);
             foreach (var fenotyp in generations)
             {
                 for (int fenotypIndex = 0; fenotypIndex < fenotyp.Count; fenotypIndex++)

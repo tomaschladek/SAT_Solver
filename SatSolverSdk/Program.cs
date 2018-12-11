@@ -21,13 +21,14 @@ namespace SatSolverSdk
         {
             Initialize();
             var mode = EMode.GeneticAlgorithm;
+            var definitions = GetInputs(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\20_91_SAT\Weighted", 100).ToList();
             switch (mode)
             {
                 case EMode.Generation:
                     new InstanceGenerator().Generate(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\", "Weighted");
                     break;
                 case EMode.Execution:
-                    Execute(new DpllStrategy());
+                    Execute(new DpllStrategy(),definitions);
                     break;
                 case EMode.GeneticAlgorithm:
                     //Execute(new GeneticStrategy(300, 100, 20, 90, new RandomCrossStrategy(),
@@ -40,12 +41,11 @@ namespace SatSolverSdk
                     //    new TournamentSelectionStrategy(5, 5, 0, new NoCorrectionStrategy())));
                     //Execute(new GeneticStrategy(300, 100, 2, 90, new RandomCrossStrategy(), 
                     //    new TournamentSelectionStrategy(10, 5, 0, new NoCorrectionStrategy())));
-
-                    Execute(new DpllStrategy());
+                    Execute(new DpllStrategy(), definitions);
                     Execute(new GeneticStrategy(300, 100, 2, 90, new RandomCrossStrategy(), 
-                        new TournamentSelectionStrategy(5, 5, 0, new NoCorrectionStrategy()), true));
+                        new TournamentSelectionStrategy(5, 5, 0, new NoCorrectionStrategy()), true), definitions);
                     Execute(new GeneticStrategy(100, 200, 25, 90, new RandomCrossStrategy(), 
-                        new TournamentSelectionStrategy(5,5, 0, new NoCorrectionStrategy()), false));
+                        new TournamentSelectionStrategy(5,5, 0, new NoCorrectionStrategy()), false), definitions);
                     break;
             }
         }
@@ -56,9 +56,8 @@ namespace SatSolverSdk
             _executor = new Executor();
         }
 
-        private static void Execute(IStrategy strategy)
+        private static void Execute(IStrategy strategy, List<SatDefinitionDto> definitions)
         {
-            var definitions = GetInputs(@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\20_91_SAT\Weighted", 100).ToList();
             var duration = _executor.ExecuteOverDefinitions(strategy, definitions, @"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\PAA\SAT\Quality_20_91_SAT.csv");
             Console.WriteLine($"Duration: {duration}");
             Console.WriteLine($"=====================================");
