@@ -36,7 +36,7 @@ namespace SatSolver.Strategy.GeneticAlgorithm.Selections
                     })
                     .ToList();
                 var maxScore = tournament.Max(item => item.Score.Item2);
-                yield return tournament.First(item => item.Score.Item2 == maxScore).Fenotyp;
+                yield return new BitArray(tournament.First(item => item.Score.Item2 == maxScore).Fenotyp);
             }
         }
 

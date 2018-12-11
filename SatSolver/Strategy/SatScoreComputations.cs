@@ -27,12 +27,19 @@ namespace SatSolver.Strategy
         public IEnumerable<((BitArray item, FormulaResultDto) item, long)> GetScores(SatDefinitionDto definition, List<BitArray> generation)
         {
             var presence = new BitArray(definition.VariableCount, true);
+
             return generation
                 .Select(item => (item, IsSatisfiable(definition, item, presence)))
                 .Select(item => (item,
                     item.Item2.Satisfaction == ESatisfaction.All
                         ? GetScoreItem(item.Item1, definition) + definition.Clauses.Count
                         : item.Item2.Counter));
+        }
+
+        public ((BitArray item, FormulaResultDto) item, long) GetClearScores(SatDefinitionDto definition, BitArray generation)
+        {
+            return GetScores(definition,new List<BitArray> { generation})
+                .Single();
         }
 
         public long GetScoreItem(BitArray fenotyp, SatDefinitionDto definition)

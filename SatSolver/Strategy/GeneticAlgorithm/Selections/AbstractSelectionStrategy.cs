@@ -21,7 +21,7 @@ namespace SatSolver.Strategy.GeneticAlgorithm.Selections
 
         protected int ElitesCount { get; set; }
         protected int WeakestsCount { get; set; }
-        protected int StartCount { get; set; }
+        public int StartCount { get; set; }
 
         private IEnumerable<BitArray> SelectElites(SatDefinitionDto definition, List<BitArray> generation)
         {
@@ -49,7 +49,7 @@ namespace SatSolver.Strategy.GeneticAlgorithm.Selections
         {
             var correctedGeneration = CorrectionStrategy.CorrectGeneration(definition, generation).ToList();
             var elites = SelectElites(definition, correctedGeneration).ToList();
-            var childrenByScore = SelectByCriteria(definition, random, generation.ToList());
+            var childrenByScore = SelectByCriteria(definition, random, generation);
             var result = RemoveWeakests(definition, elites.Concat(childrenByScore).ToList());
             return result;
         }

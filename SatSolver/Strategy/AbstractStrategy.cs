@@ -9,7 +9,8 @@ namespace SatSolver.Strategy
         public abstract BitArray Solve(SatDefinitionDto definition);
         public virtual IEnumerable<(long, BitArray)> Execute(SatDefinitionDto definition)
         {
-            yield return (1, Solve(definition));
+            var bitArray = Solve(definition);
+            yield return (ScoreComputation.GetClearScores(definition, bitArray).Item2 - definition.Clauses.Count, bitArray);
         }
 
         public abstract string Id { get; }

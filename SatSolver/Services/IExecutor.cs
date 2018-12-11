@@ -10,6 +10,7 @@ namespace SatSolver.Services
     public interface IExecutor
     {
         double Execute(IStrategy strategy, IList<SatDefinitionDto> definitions, string fullPath);
+        double ExecuteOverDefinitions(IStrategy strategy, IList<SatDefinitionDto> definitions, string fullPath);
     }
 
     public class Executor : IExecutor
@@ -27,6 +28,24 @@ namespace SatSolver.Services
                     _provider.AppendFile(fullPath, new []{ $"{definition.FileName}-Run{repetition}" }.Concat(series.Select(item => item.Item1.ToString())).ToArray());
                 }
             }
+            stopwatch.Stop();
+            return stopwatch.Elapsed.TotalMilliseconds;
+        }
+
+        public double ExecuteOverDefinitions(IStrategy strategy, IList<SatDefinitionDto> definitions, string fullPath)
+        {
+            var cache = new List<long>();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            foreach (var definition in definitions)
+            {
+                for (int repetition = 1; repetition <= 1; repetition++)
+                {
+                    var series = strategy.Execute(definition).ToList();
+                    cache.Add(series.Last().Item1);
+                }
+            }
+            _provider.AppendFile(fullPath, new[] { $"{strategy.Id}" }.Concat(cache.Select(item => item.ToString())).ToArray());
             stopwatch.Stop();
             return stopwatch.Elapsed.TotalMilliseconds;
         }

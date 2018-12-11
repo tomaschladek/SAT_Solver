@@ -11,7 +11,8 @@ namespace SatSolver.Strategy.GeneticAlgorithm
     public class GeneticStrategy : AbstractStrategy
     {
         public GeneticStrategy(int generationCount, int populationSize, int mutationProbability,
-            int crossoverProbability, ICrossStrategy crossStrategy, ISelectionStrategy selectionStrategy)
+            int crossoverProbability, ICrossStrategy crossStrategy, ISelectionStrategy selectionStrategy,
+            bool areElitesMutated)
         {
             Generations = generationCount;
             PopulationSize = populationSize;
@@ -19,7 +20,10 @@ namespace SatSolver.Strategy.GeneticAlgorithm
             CrossoverProbability = crossoverProbability;
             CrossStrategy = crossStrategy;
             SelectionStrategy = selectionStrategy;
+            AreElitesMutated = areElitesMutated;
         }
+
+        protected bool AreElitesMutated { get; set; }
 
         private ICrossStrategy CrossStrategy { get; set; }
         private ISelectionStrategy SelectionStrategy { get; set; }
@@ -44,17 +48,20 @@ namespace SatSolver.Strategy.GeneticAlgorithm
                 var generationSelection = SelectionStrategy.Select(definition, random, generation).ToList();
                 var generationNew = CrossStrategy.Cross(definition.VariableCount, random, generationSelection, PopulationSize, CrossoverProbability).ToList();
 
-                Mutation(random, generationNew);
+                Mutation(random, generationNew, definition);
 
                 generation = generationNew;
                 var scoreTuple = ScoreComputation.GetBest(definition, generation);
-                yield return (scoreTuple.Item1 - definition.Clauses.Count,scoreTuple.Item2);
+                yield return (ScoreComputation.GetClearScores(definition,scoreTuple.Item2).Item2 - definition.Clauses.Count,scoreTuple.Item2);
             }
         }
 
-        private void Mutation(Random random, List<BitArray> generationNew)
+        private void Mutation(Random random, List<BitArray> generationNew, SatDefinitionDto definition)
         {
-            foreach (var fenotyp in generationNew)
+            var generations = AreElitesMutated
+                ? generationNew
+                : generationNew.OrderByDescending(item => ScoreComputation.GetClearScores(definition, item).Item2).Skip(((AbstractSelectionStrategy)SelectionStrategy).StartCount);
+            foreach (var fenotyp in generations)
             {
                 for (int fenotypIndex = 0; fenotypIndex < fenotyp.Count; fenotypIndex++)
                 {
