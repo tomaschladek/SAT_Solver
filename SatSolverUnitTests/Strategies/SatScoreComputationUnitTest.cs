@@ -82,7 +82,7 @@ namespace SatSolverUnitTests.Strategies
                     [4] = v5
                 };
                 var score = SatScoreComputations.GetScores(_definition, new List<BitArray>{fenotyp}).Single();
-                Assert.AreEqual(result,score.Item2);
+                Assert.AreEqual(result + 3, score.Item2);
                 Assert.AreEqual(fenotyp,score.Item1.item);
                 Assert.AreEqual(counter,score.Item1.Item2.Counter);
                 Assert.AreEqual(satisfaction,score.Item1.Item2.Satisfaction);
@@ -150,7 +150,7 @@ namespace SatSolverUnitTests.Strategies
                     new BitArray(new[] {true, true, false, false, false}),
                 };
                 var score = SatScoreComputations.GetBest(_definition,generations);
-                Assert.AreEqual(3, score.Item1);
+                Assert.AreEqual(6, score.Item1, "3 clauses + weight[0] == 1 + weight[1] == 2");
                 Assert.AreEqual(generations[3], score.Item2);
             }
 
@@ -165,7 +165,7 @@ namespace SatSolverUnitTests.Strategies
                     new BitArray(new[] {true, true, false, false, false}),
                 };
                 var score = SatScoreComputations.GetBest(_definition,generations);
-                Assert.AreEqual(8, score.Item1);
+                Assert.AreEqual(11, score.Item1, "8 weights + 3 clauses");
                 Assert.AreEqual(generations[1], score.Item2);
             }
         }

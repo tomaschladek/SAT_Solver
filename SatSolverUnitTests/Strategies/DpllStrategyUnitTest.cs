@@ -35,7 +35,7 @@ namespace SatSolverUnitTests.Strategies
             bool v16, bool v17, bool v18, bool v19, bool v20)
         {
             var definition = ReadManager.ReadDefinition(
-                $@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\uf20-0{index}.cnf");
+                $@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\20_91_SAT\uf20-0{index}.cnf");
             var solution = Strategy.Solve(definition);
             Assert.AreEqual(v1, solution[0]);
             Assert.AreEqual(v2, solution[1]);
