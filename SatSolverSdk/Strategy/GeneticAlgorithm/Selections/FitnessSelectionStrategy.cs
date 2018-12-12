@@ -20,13 +20,12 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
         }
 
         protected override IEnumerable<BitArray> SelectByCriteria(SatDefinitionDto definition, Random random,
-            List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache)
+            List<BitArray> generation, IDictionary<int, FormulaResultDto> cache)
         {
             var score = ScoreComputation
                 .GetScores(definition, generation, cache)
-                .Select(item => (item.item,item.Item2+definition.VariableCount))
                 .ToList();
-            var sumScore = score.Sum(item => item.Item2);
+            var sumScore = score.Sum(item => item.Score);
             for (var newGenerationIndex = StartCount; newGenerationIndex < generation.Count; newGenerationIndex++)
             {
                 var randomValue = random.Next(0, (int)sumScore);
@@ -35,7 +34,7 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
                 do
                 {
                     counter++;
-                    sumValue += score[counter].Item2;
+                    sumValue += score[counter].Score;
                 } while (sumValue <= randomValue);
 
                 yield return generation[counter];

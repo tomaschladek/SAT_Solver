@@ -20,13 +20,13 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
         }
 
         protected override IEnumerable<BitArray> SelectByCriteria(SatDefinitionDto definition, Random random,
-            List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache)
+            List<BitArray> generation, IDictionary<int, FormulaResultDto> cache)
         {
             var ordered = ScoreComputation
                 .GetScores(definition,generation, cache)
-                .Select((bits, index) => new { Bits = bits.item.item, OriginalIndex = index, Score = bits.Item2 })
+                .Select((bits, index) => new { bits.Fenotyp, OriginalIndex = index, bits.Score })
                 .OrderBy(item => item.Score)
-                .Select((tuple, newIndex) => new { tuple.Bits, tuple.OriginalIndex, tuple.Score, NewIndex = generation.Count - newIndex })
+                .Select((tuple, newIndex) => new { tuple.Fenotyp, tuple.OriginalIndex, tuple.Score, NewIndex = generation.Count - newIndex })
                 .ToList();
 
             var sumOrder = ordered.Sum(item => item.NewIndex);

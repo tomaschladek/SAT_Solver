@@ -24,30 +24,30 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
         public int StartCount { get; set; }
 
         private IEnumerable<BitArray> SelectElites(SatDefinitionDto definition, List<BitArray> generation,
-            IDictionary<BitArray, FormulaResultDto> cache)
+            IDictionary<int, FormulaResultDto> cache)
         {
             var elites = ScoreComputation
                 .GetScores(definition, generation,cache)
-                .OrderByDescending(tuple => tuple.Item2)
+                .OrderByDescending(tuple => tuple.Score)
                 .Take(ElitesCount).ToArray();
 
             StartCount = elites.Length - WeakestsCount;
 
-            return elites.Select(item => item.item.item);
+            return elites.Select(item => item.Fenotyp);
         }
 
         private IEnumerable<BitArray> RemoveWeakests(SatDefinitionDto definition, List<BitArray> generation,
-            IDictionary<BitArray, FormulaResultDto> cache)
+            IDictionary<int, FormulaResultDto> cache)
         {
             return ScoreComputation
                 .GetScores(definition, generation, cache)
-                .OrderBy(tuple => tuple.Item2)
+                .OrderBy(tuple => tuple.Score)
                 .Skip(WeakestsCount)
-                .Select(item => item.item.item);
+                .Select(item => item.Fenotyp);
         }
 
 
-        public IEnumerable<BitArray> Select(SatDefinitionDto definition, Random random, List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache)
+        public IEnumerable<BitArray> Select(SatDefinitionDto definition, Random random, List<BitArray> generation, IDictionary<int, FormulaResultDto> cache)
         {
             var correctedGeneration = CorrectionStrategy.CorrectGeneration(definition, generation).ToList();
             var elites = SelectElites(definition, correctedGeneration, cache).ToList();
@@ -59,6 +59,6 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
         public abstract string Id { get; }
 
         protected abstract IEnumerable<BitArray> SelectByCriteria(SatDefinitionDto definition, Random random,
-            List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache);
+            List<BitArray> generation, IDictionary<int, FormulaResultDto> cache);
     }
 }

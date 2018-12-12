@@ -25,7 +25,7 @@ namespace SatSolverSdk.Services
                 for (int repetition = 1; repetition <= 10; repetition++)
                 {
                     var series = strategy.Execute(definition).ToList();
-                    _provider.AppendFile(fullPath, new []{ $"{definition.FileName}-Run{repetition}" }.Concat(series.Select(item => item.Item1.ToString())).ToArray());
+                    _provider.AppendFile(fullPath, new []{ $"{definition.FileName}-Run{repetition}" }.Concat(series.Select(item => item.Score.ToString())).ToArray());
                 }
             }
             stopwatch.Stop();
@@ -42,7 +42,7 @@ namespace SatSolverSdk.Services
                 for (int repetition = 1; repetition <= 1; repetition++)
                 {
                     var series = strategy.Execute(definition).ToList();
-                    cache.Add(series.Last().Item1);
+                    cache.Add(series.Last().Score);
                 }
             }
             _provider.AppendFile(fullPath, new[] { $"{strategy.Id}" }.Concat(cache.Select(item => item.ToString())).ToArray());

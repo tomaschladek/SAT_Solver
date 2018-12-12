@@ -35,10 +35,10 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
 
         public override BitArray Solve(SatDefinitionDto definition)
         {
-            return Execute(definition).Last().Item2;
+            return Execute(definition).Last().Fenotyp;
         }
 
-        public override IEnumerable<(long, BitArray)> Execute(SatDefinitionDto definition)
+        public override IEnumerable<(BitArray Fenotyp, long Score)> Execute(SatDefinitionDto definition)
         {
             var random = new Random();
             var generation = InitializeGeneration(definition.VariableCount, random).ToList();
@@ -52,7 +52,7 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
 
                 generation = generationNew;
                 var scoreTuple = ScoreComputation.GetBest(definition, generation, Cache);
-                yield return (ScoreComputation.GetClearScores(definition,scoreTuple.Item2, Cache).Item2 - definition.Clauses.Count,scoreTuple.Item2);
+                yield return (scoreTuple.Fenotyp, ScoreComputation.GetClearScores(definition,scoreTuple.Fenotyp, Cache).Score - definition.Clauses.Count);
             }
         }
 
@@ -60,7 +60,8 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
         {
             var generations = AreElitesMutated
                 ? generationNew
-                : generationNew.OrderByDescending(item => ScoreComputation.GetClearScores(definition, item, Cache).Item2).Skip(((AbstractSelectionStrategy)SelectionStrategy).StartCount);
+                : generationNew.OrderByDescending(item => ScoreComputation.GetClearScores(definition, item, Cache).Score)
+                .Skip(((AbstractSelectionStrategy)SelectionStrategy).StartCount);
             foreach (var fenotyp in generations)
             {
                 for (int fenotypIndex = 0; fenotypIndex < fenotyp.Count; fenotypIndex++)

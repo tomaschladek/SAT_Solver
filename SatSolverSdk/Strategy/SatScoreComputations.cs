@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using SatSolverSdk.Dtos;
 
@@ -9,39 +8,42 @@ namespace SatSolverSdk.Strategy
 {
     public class SatScoreComputations
     {
-        public (long, BitArray) GetBest(SatDefinitionDto definition, List<BitArray> generation,
-            IDictionary<BitArray, FormulaResultDto> cache)
+        public (BitArray Fenotyp, long Score) GetBest(SatDefinitionDto definition, List<BitArray> generation,
+            IDictionary<int, FormulaResultDto> cache)
         {
             var candidates = GetBests(definition, generation, cache).ToList();
-            var maxWeight = candidates.Max(item => item.Item2);
-            var result = candidates.First(item => item.Item2 == maxWeight);
-            return (maxWeight, result.Item1.Item1);
+            var maxWeight = candidates.Max(item => item.Score);
+            var result = candidates.First(item => item.Score == maxWeight);
+            return (result.Fenotyp, maxWeight);
         }
 
-        private IEnumerable<((BitArray item, FormulaResultDto) item, long)> GetBests(SatDefinitionDto definition,
-            List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache)
+        private IEnumerable<(BitArray Fenotyp, FormulaResultDto SatResult, long Score)> GetBests(SatDefinitionDto definition,
+            List<BitArray> generation, IDictionary<int, FormulaResultDto> cache)
         {
             var scoredFormulas = GetScores(definition, generation, cache).ToList();
-            var maxSatisfiedClauses = scoredFormulas.Max(item => item.Item1.Item2.Counter);
+            var maxSatisfiedClauses = scoredFormulas.Max(item => item.SatResult.Counter);
             return scoredFormulas
-                .Where(item => item.Item1.Item2.Counter == maxSatisfiedClauses);
+                .Where(item => item.SatResult.Counter == maxSatisfiedClauses);
         }
 
-        public IEnumerable<((BitArray item, FormulaResultDto) item, long)> GetScores(SatDefinitionDto definition,
-            List<BitArray> generation, IDictionary<BitArray, FormulaResultDto> cache)
+        public IEnumerable<(BitArray Fenotyp, FormulaResultDto SatResult, long Score)> GetScores(SatDefinitionDto definition,
+            List<BitArray> generation, IDictionary<int, FormulaResultDto> cache)
         {
             var presence = new BitArray(definition.VariableCount, true);
 
             return generation
-                .Select(item => (item, IsSatisfiable(definition, item, presence,cache)))
-                .Select(item => (item,
-                    item.Item2.Satisfaction == ESatisfaction.All
-                        ? GetScoreItem(item.Item1, definition) + definition.Clauses.Count
-                        : item.Item2.Counter));
+                .Select(item =>
+                {
+                    var satResult = IsSatisfiable(definition, item, presence, cache);
+                    var score = satResult.Satisfaction == ESatisfaction.All
+                        ? GetScoreItem(item, definition) + definition.Clauses.Count
+                        : satResult.Counter;
+                    return (item, satResult,score);
+                });
         }
 
-        public ((BitArray item, FormulaResultDto) item, long) GetClearScores(SatDefinitionDto definition,
-            BitArray generation, IDictionary<BitArray, FormulaResultDto> cache)
+        public (BitArray Fenotyp, FormulaResultDto SatResult, long Score) GetClearScores(SatDefinitionDto definition,
+            BitArray generation, IDictionary<int, FormulaResultDto> cache)
         {
             return GetScores(definition,new List<BitArray> { generation}, cache)
                 .Single();
@@ -49,15 +51,8 @@ namespace SatSolverSdk.Strategy
 
         public long GetScoreItem(BitArray fenotyp, SatDefinitionDto definition)
         {
-            var weight = 0L;
-            for (int index = 0; index < fenotyp.Count; index++)
-            {
-                if (fenotyp[index])
-                {
-                    weight += definition.Weights[index];
-                }
-            }
-            return weight;
+            var index = 0;
+            return definition.Weights.Sum(item => fenotyp[index++] ? item : 0);
         }
 
         public bool? IsSatisfiable(BitArray partialSolution, BitArray presence, ClausesDto clause)
@@ -82,11 +77,12 @@ namespace SatSolverSdk.Strategy
             return isAnyVariableSatisfied;
         }
 
-        public FormulaResultDto IsSatisfiable(SatDefinitionDto definition, BitArray partialSolution, BitArray presence, IDictionary<BitArray, FormulaResultDto> cache)
+        public FormulaResultDto IsSatisfiable(SatDefinitionDto definition, BitArray partialSolution, BitArray presence, IDictionary<int, FormulaResultDto> cache)
         {
-            if (cache.ContainsKey(partialSolution))
+            var hash = GetHashCode(partialSolution);
+            if (cache.ContainsKey(hash))
             {
-                return cache[partialSolution];
+                return cache[hash];
             }
             var isAnyFailed = false;
             var counter = 0;
@@ -112,7 +108,26 @@ namespace SatSolverSdk.Strategy
             var result = new FormulaResultDto(counter, isAnyFailed ? ESatisfaction.NotSatisfiedExists : areAllClausesSatisfied
                 ? ESatisfaction.All
                 : ESatisfaction.Some);
-            cache.Add(partialSolution,result);
+            cache.Add(hash, result);
+            return result;
+        }
+
+        private int GetHashCode(BitArray partialSolution)
+        {
+            var data = GenerateValues(partialSolution);
+            int hash = 17;
+            foreach (var vector32 in data)
+            {
+                hash = hash * 23 + vector32.GetHashCode();
+            }
+            return hash;
+        }
+
+        private static int[] GenerateValues(BitArray partialSolution)
+        {
+            var size = (int) Math.Ceiling((double) partialSolution.Count / 32);
+            var result = new int[size];
+            partialSolution.CopyTo(result, 0);
             return result;
         }
     }
