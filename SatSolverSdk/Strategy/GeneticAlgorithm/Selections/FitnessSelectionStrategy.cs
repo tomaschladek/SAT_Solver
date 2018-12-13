@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SatSolverSdk.Dtos;
@@ -19,13 +18,10 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
         {
         }
 
-        protected override IEnumerable<BitArray> SelectByCriteria(SatDefinitionDto definition, Random random,
-            List<BitArray> generation, IDictionary<int, FormulaResultDto> cache)
+        protected override IEnumerable<FenotypDto> SelectByCriteria(SatDefinitionDto definition, Random random,
+            List<FenotypDto> generation, IDictionary<int, FormulaResultDto> cache)
         {
-            var score = ScoreComputation
-                .GetScores(definition, generation, cache)
-                .ToList();
-            var sumScore = score.Sum(item => item.Score);
+            var sumScore = generation.Sum(item => item.Score);
             for (var newGenerationIndex = StartCount; newGenerationIndex < generation.Count; newGenerationIndex++)
             {
                 var randomValue = random.Next(0, (int)sumScore);
@@ -34,7 +30,7 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
                 do
                 {
                     counter++;
-                    sumValue += score[counter].Score;
+                    sumValue += generation[counter].Score;
                 } while (sumValue <= randomValue);
 
                 yield return generation[counter];

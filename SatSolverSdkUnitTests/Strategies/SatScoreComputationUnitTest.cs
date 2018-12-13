@@ -80,14 +80,14 @@ namespace SatSolverSdkUnitTests.Strategies
                     [3] = v4,
                     [4] = v5
                 };
-                var score = SatScoreComputations.GetScores(_definition, new List<BitArray>{fenotyp}, new Dictionary<int, FormulaResultDto>()).Single();
+                var score = SatScoreComputations.GetScores(_definition, new List<BitArray> {fenotyp}, new Dictionary<int, FormulaResultDto>()).Single();
                 Assert.AreEqual(result + 3, score.Score);
                 Assert.AreEqual(fenotyp,score.Fenotyp);
                 Assert.AreEqual(counter,score.SatResult.Counter);
                 Assert.AreEqual(satisfaction,score.SatResult.Satisfaction);
                 if (result >= 0)
                 {
-                    Assert.AreEqual(result, SatScoreComputations.GetScoreItem(fenotyp,_definition));
+                    Assert.AreEqual(result, SatScoreComputations.GetWeights(fenotyp,_definition));
                 }
             }
 
@@ -134,7 +134,7 @@ namespace SatSolverSdkUnitTests.Strategies
                     [3] = v4,
                     [4] = v5
                 };
-                var score = SatScoreComputations.GetScoreItem(fenotyp, _definition);
+                var score = SatScoreComputations.GetWeights(fenotyp, _definition);
                 Assert.AreEqual(result, score);
             }
 
@@ -148,7 +148,8 @@ namespace SatSolverSdkUnitTests.Strategies
                     new BitArray(new[] {true, true, false, true, false}),
                     new BitArray(new[] {true, true, false, false, false}),
                 };
-                var score = SatScoreComputations.GetBest(_definition,generations, new Dictionary<int, FormulaResultDto>());
+                var scores = SatScoreComputations.GetScores(_definition,generations, new Dictionary<int, FormulaResultDto>());
+                var score = SatScoreComputations.GetBest(scores.ToList());
                 Assert.AreEqual(6, score.Score, "3 clauses + weight[0] == 1 + weight[1] == 2");
                 Assert.AreEqual(generations[3], score.Fenotyp);
             }
@@ -163,7 +164,8 @@ namespace SatSolverSdkUnitTests.Strategies
                     new BitArray(new[] {true, true, false, true, false}),
                     new BitArray(new[] {true, true, false, false, false}),
                 };
-                var score = SatScoreComputations.GetBest(_definition,generations, new Dictionary<int, FormulaResultDto>());
+                var scores = SatScoreComputations.GetScores(_definition, generations, new Dictionary<int, FormulaResultDto>());
+                var score = SatScoreComputations.GetBest(scores.ToList());
                 Assert.AreEqual(11, score.Score, "8 weights + 3 clauses");
                 Assert.AreEqual(generations[1], score.Fenotyp);
             }

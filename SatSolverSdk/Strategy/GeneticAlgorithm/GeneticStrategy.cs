@@ -10,6 +10,9 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
 {
     public class GeneticStrategy : AbstractStrategy
     {
+        private IDictionary<int, FormulaResultDto> _cache = new Dictionary<int, FormulaResultDto>();
+        protected override IDictionary<int, FormulaResultDto> Cache => _cache;
+
         public GeneticStrategy(int generationCount, int populationSize, int mutationProbability,
             int crossoverProbability, ICrossStrategy crossStrategy, ISelectionStrategy selectionStrategy,
             bool areElitesMutated)
@@ -35,13 +38,14 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
 
         public override BitArray Solve(SatDefinitionDto definition)
         {
+            _cache = new Dictionary<int, FormulaResultDto>();
             return Execute(definition).Last().Fenotyp;
         }
 
-        public override IEnumerable<(BitArray Fenotyp, long Score)> Execute(SatDefinitionDto definition)
+        public override IEnumerable<FenotypDto> Execute(SatDefinitionDto definition)
         {
             var random = new Random();
-            var generation = InitializeGeneration(definition.VariableCount, random).ToList();
+            var generation = InitializeGeneration(definition.VariableCount, random, definition).ToList();
 
             for (var generationIndex = 0; generationIndex < Generations; generationIndex++)
             {
@@ -49,10 +53,11 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
                 var generationNew = CrossStrategy.Cross(definition.VariableCount, random, generationSelection, PopulationSize, CrossoverProbability).ToList();
 
                 Mutation(random, generationNew, definition);
+                generation = ScoreComputation.GetScores(definition, generationNew, Cache).ToList();
 
-                generation = generationNew;
-                var scoreTuple = ScoreComputation.GetBest(definition, generation, Cache);
-                yield return (scoreTuple.Fenotyp, ScoreComputation.GetClearScores(definition,scoreTuple.Fenotyp, Cache).Score - definition.Clauses.Count);
+                var fenotyp = ScoreComputation.GetBest(generation);
+                fenotyp.Score = fenotyp.Score - definition.Clauses.Count;
+                yield return fenotyp;
             }
         }
 
@@ -68,17 +73,18 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
                 {
                     if (random.Next(0, 100) < MutationProbability)
                     {
-                        fenotyp.Set(fenotypIndex, !fenotyp[fenotypIndex]);
+                        fenotyp[fenotypIndex] = !fenotyp[fenotypIndex];
                     }
                 }
             }
         }
 
-        private IEnumerable<BitArray> InitializeGeneration(int vectorSize, Random random)
+        private IEnumerable<FenotypDto> InitializeGeneration(int vectorSize, Random random, SatDefinitionDto definition)
         {
             for (int generationIndex = 0; generationIndex < PopulationSize; generationIndex++)
             {
-                yield return GenerateRandomVector(vectorSize, random);
+                var randomVector = GenerateRandomVector(vectorSize, random);
+                yield return ScoreComputation.GetClearScores(definition, randomVector, Cache);
             }
         }
 

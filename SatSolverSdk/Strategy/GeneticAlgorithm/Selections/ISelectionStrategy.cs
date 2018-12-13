@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using SatSolverSdk.Dtos;
 
@@ -7,7 +6,7 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
 {
     public interface ISelectionStrategy
     {
-        IEnumerable<BitArray> Select(SatDefinitionDto definition, Random random, List<BitArray> generation, IDictionary<int, FormulaResultDto> cache);
+        IEnumerable<FenotypDto> Select(SatDefinitionDto definition, Random random, List<FenotypDto> generation, IDictionary<int, FormulaResultDto> cache);
         string Id { get; }
     }
 }

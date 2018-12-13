@@ -23,26 +23,20 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
 
         private int TournamentSize { get; set; }
 
-        protected override IEnumerable<BitArray> SelectByCriteria(SatDefinitionDto definition, Random random,
-            List<BitArray> generation, IDictionary<int, FormulaResultDto> cache)
+        protected override IEnumerable<FenotypDto> SelectByCriteria(SatDefinitionDto definition, Random random,
+            List<FenotypDto> generation, IDictionary<int, FormulaResultDto> cache)
         {
             for (int index = StartCount; index < generation.Count; index++)
             {
                 var tournamentCandidates = GenerateTournament(random, generation);
-                var tournament = tournamentCandidates
-                    .Select((fenotyp, tournamentInde) => new
-                    {
-                        Index = tournamentInde,
-                        Fenotyp = fenotyp,
-                        Score = ScoreComputation.GetScores(definition, new List<BitArray>{fenotyp},cache).Single()
-                    })
-                    .ToList();
-                var maxScore = tournament.Max(item => item.Score.Score);
-                yield return new BitArray(tournament.First(item => item.Score.Score == maxScore).Fenotyp);
+                var tournament = tournamentCandidates.ToList();
+                var maxScore = tournament.Max(item => item.Score);
+                var winner = tournament.First(item => item.Score == maxScore);
+                yield return new FenotypDto(new BitArray(winner.Fenotyp),winner.Score,winner.SatResult);
             }
         }
 
-        private IEnumerable<BitArray> GenerateTournament(Random random, List<BitArray> generation)
+        private IEnumerable<FenotypDto> GenerateTournament(Random random, List<FenotypDto> generation)
         {
             for (int tournamentRound = 0; tournamentRound < TournamentSize; tournamentRound++)
             {

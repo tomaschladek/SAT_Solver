@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using SatSolverSdk.Dtos;
 
 namespace SatSolverSdk.Strategy.GeneticAlgorithm.Crossing
 {
     public class DoubleCrossStrategy : ICrossStrategy
     {
-        public IEnumerable<BitArray> Cross(int vectorSize, Random random, List<BitArray> generation,
+        public IEnumerable<BitArray> Cross(int vectorSize, Random random, List<FenotypDto> generation,
             int populationSize,
             int crossoverProbability)
         {
@@ -14,13 +15,13 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Crossing
             {
                 var cutFrom = random.Next(0, vectorSize);
                 var cutTo = random.Next(0, vectorSize);
-                var first = new BitArray(generation[fenotypIndex]);
-                var second = new BitArray(generation[fenotypIndex + 1]);
+                var first = new BitArray(generation[fenotypIndex].Fenotyp);
+                var second = new BitArray(generation[fenotypIndex + 1].Fenotyp);
 
                 var counter = cutFrom;
                 while (counter != cutTo)
                 {
-                    var temp = generation[fenotypIndex][counter];
+                    var temp = generation[fenotypIndex].Fenotyp[counter];
                     first[counter] = second[counter];
                     second[counter] = temp;
                     counter = (counter + 1) % first.Count;

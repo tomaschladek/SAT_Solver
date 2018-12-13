@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using SatSolverSdk.Dtos;
 
 namespace SatSolverSdk.Strategy
 {
     public class GsatStrategy : AbstractStrategy
     {
+        private IDictionary<int, FormulaResultDto> _cache = new Dictionary<int, FormulaResultDto>();
+        protected override IDictionary<int, FormulaResultDto> Cache => _cache;
+
         public override string Id => "GSAT";
 
         public GsatStrategy(int maxProbes)
@@ -17,6 +21,7 @@ namespace SatSolverSdk.Strategy
 
         public override BitArray Solve(SatDefinitionDto definition)
         {
+            _cache = new Dictionary<int, FormulaResultDto>();
             Random generator = new Random();
             var presence = new BitArray(definition.VariableCount, true);
             for (int probe = 0; probe < MaxProbes; probe++)

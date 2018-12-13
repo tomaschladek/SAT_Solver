@@ -7,15 +7,16 @@ namespace SatSolverSdk.Strategy
     public abstract class AbstractStrategy : IStrategy
     {
         public abstract BitArray Solve(SatDefinitionDto definition);
-        public virtual IEnumerable<(BitArray Fenotyp, long Score)> Execute(SatDefinitionDto definition)
+        public virtual IEnumerable<FenotypDto> Execute(SatDefinitionDto definition)
         {
             var bitArray = Solve(definition);
-            yield return (bitArray, ScoreComputation.GetClearScores(definition, bitArray, Cache).Score - definition.Clauses.Count);
+            var result = ScoreComputation.GetClearScores(definition, bitArray, Cache);
+            yield return new FenotypDto(bitArray, result.Score - definition.Clauses.Count,result.SatResult);
         }
 
         public abstract string Id { get; }
 
         protected readonly SatScoreComputations ScoreComputation = new SatScoreComputations();
-        protected IDictionary<int, FormulaResultDto> Cache = new Dictionary<int, FormulaResultDto>();
+        protected virtual IDictionary<int, FormulaResultDto> Cache => null;
     }
 }

@@ -8,25 +8,14 @@ namespace SatSolverSdk.Strategy
 {
     public class SatScoreComputations
     {
-        public (BitArray Fenotyp, long Score) GetBest(SatDefinitionDto definition, List<BitArray> generation,
-            IDictionary<int, FormulaResultDto> cache)
+        public FenotypDto GetBest(List<FenotypDto> generation)
         {
-            var candidates = GetBests(definition, generation, cache).ToList();
-            var maxWeight = candidates.Max(item => item.Score);
-            var result = candidates.First(item => item.Score == maxWeight);
-            return (result.Fenotyp, maxWeight);
+            var maxWeight = generation.Max(item => item.Score);
+            var result = generation.First(item => item.Score == maxWeight);
+            return new FenotypDto(result.Fenotyp, maxWeight, result.SatResult);
         }
 
-        private IEnumerable<(BitArray Fenotyp, FormulaResultDto SatResult, long Score)> GetBests(SatDefinitionDto definition,
-            List<BitArray> generation, IDictionary<int, FormulaResultDto> cache)
-        {
-            var scoredFormulas = GetScores(definition, generation, cache).ToList();
-            var maxSatisfiedClauses = scoredFormulas.Max(item => item.SatResult.Counter);
-            return scoredFormulas
-                .Where(item => item.SatResult.Counter == maxSatisfiedClauses);
-        }
-
-        public IEnumerable<(BitArray Fenotyp, FormulaResultDto SatResult, long Score)> GetScores(SatDefinitionDto definition,
+        public IEnumerable<FenotypDto> GetScores(SatDefinitionDto definition,
             List<BitArray> generation, IDictionary<int, FormulaResultDto> cache)
         {
             var presence = new BitArray(definition.VariableCount, true);
@@ -36,20 +25,20 @@ namespace SatSolverSdk.Strategy
                 {
                     var satResult = IsSatisfiable(definition, item, presence, cache);
                     var score = satResult.Satisfaction == ESatisfaction.All
-                        ? GetScoreItem(item, definition) + definition.Clauses.Count
+                        ? GetWeights(item, definition) + definition.Clauses.Count
                         : satResult.Counter;
-                    return (item, satResult,score);
+                    return new FenotypDto(item, score, satResult);
                 });
         }
 
-        public (BitArray Fenotyp, FormulaResultDto SatResult, long Score) GetClearScores(SatDefinitionDto definition,
+        public FenotypDto GetClearScores(SatDefinitionDto definition,
             BitArray generation, IDictionary<int, FormulaResultDto> cache)
         {
             return GetScores(definition,new List<BitArray> { generation}, cache)
                 .Single();
         }
 
-        public long GetScoreItem(BitArray fenotyp, SatDefinitionDto definition)
+        public long GetWeights(BitArray fenotyp, SatDefinitionDto definition)
         {
             var index = 0;
             return definition.Weights.Sum(item => fenotyp[index++] ? item : 0);
@@ -79,11 +68,16 @@ namespace SatSolverSdk.Strategy
 
         public FormulaResultDto IsSatisfiable(SatDefinitionDto definition, BitArray partialSolution, BitArray presence, IDictionary<int, FormulaResultDto> cache)
         {
-            var hash = GetHashCode(partialSolution);
-            if (cache.ContainsKey(hash))
+            int hash = 1;
+            if (cache != null)
             {
-                return cache[hash];
+                hash = GetHashCode(partialSolution);
+                if (cache.ContainsKey(hash))
+                {
+                    return cache[hash];
+                }
             }
+
             var isAnyFailed = false;
             var counter = 0;
             var areAllClausesSatisfied = true;
@@ -108,7 +102,7 @@ namespace SatSolverSdk.Strategy
             var result = new FormulaResultDto(counter, isAnyFailed ? ESatisfaction.NotSatisfiedExists : areAllClausesSatisfied
                 ? ESatisfaction.All
                 : ESatisfaction.Some);
-            cache.Add(hash, result);
+            cache?.Add(hash, result);
             return result;
         }
 

@@ -8,7 +8,7 @@ namespace SatSolverSdk.Strategy
     {
         BitArray Solve(SatDefinitionDto definition);
 
-        IEnumerable<(BitArray Fenotyp, long Score)> Execute(SatDefinitionDto definition);
+        IEnumerable<FenotypDto> Execute(SatDefinitionDto definition);
 
         string Id { get; }
     }

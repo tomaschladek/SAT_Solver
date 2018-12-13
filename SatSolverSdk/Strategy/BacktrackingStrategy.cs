@@ -6,7 +6,7 @@ namespace SatSolverSdk.Strategy
     public class BacktrackingStrategy : AbstractStrategy
     {
         public override string Id => "BT";
-
+        
         public override BitArray Solve(SatDefinitionDto definition)
         {
             var emptySolution = new BitArray(definition.VariableCount,true);

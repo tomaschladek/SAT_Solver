@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Dtos\BitVectorDto.cs" />
     <Compile Include="Dtos\ClausesDto.cs" />
+    <Compile Include="Dtos\FenotypDto.cs" />
     <Compile Include="Dtos\SatDefinitionDto.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

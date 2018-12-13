@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using SatSolverSdk.Dtos;
 
@@ -8,6 +9,8 @@ namespace SatSolverSdk.Strategy
     public class WalkSatStrategy : AbstractStrategy
     {
         public override string Id => "WALKSAT";
+        private IDictionary<int, FormulaResultDto> _cache = new Dictionary<int, FormulaResultDto>();
+        protected override IDictionary<int, FormulaResultDto> Cache => _cache;
 
         public WalkSatStrategy(int maxProbes)
         {
@@ -20,6 +23,7 @@ namespace SatSolverSdk.Strategy
 
         public override BitArray Solve(SatDefinitionDto definition)
         {
+            _cache = new Dictionary<int, FormulaResultDto>();
             Random generator = new Random();
             var presence = new BitArray(definition.VariableCount, true);
             for (int probe = 0; probe < MaxProbes; probe++)
