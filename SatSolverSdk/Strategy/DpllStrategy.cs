@@ -7,39 +7,56 @@ namespace SatSolverSdk.Strategy
 {
     public class DpllStrategy : AbstractStrategy
     {
-        public override BitArray Solve(SatDefinitionDto definition)
+        public override FenotypDto Solve(SatDefinitionDto definition)
+        {
+            return ScoreComputation.GetBest(Execute(definition).ToList());
+        }
+
+        public override IEnumerable<FenotypDto> Execute(SatDefinitionDto definition)
         {
             var emptySolution = new BitArray(definition.VariableCount, true);
             var presence = new BitArray(definition.VariableCount, false);
             SetPureVariable(definition, emptySolution, presence);
-            return Solve(definition, emptySolution, presence);
+            return Solve(definition, emptySolution, presence)
+                .Select(item => ScoreComputation.GetClearScores(definition,item,null));
         }
 
-        private BitArray Solve(SatDefinitionDto definition, BitArray solution, BitArray presence)
+        private IEnumerable<BitArray> Solve(SatDefinitionDto definition, BitArray solution, BitArray presence)
         {
             var nextPosition = GetNextPosition(presence);
             if (nextPosition == null)
             {
                 // All fields filled - END condition
-                return solution;
+                yield return solution;
+                yield break;
             }
 
             var result = UnitClausePropagation(definition, solution, presence);
             if (!result)
             {
-                return null;
+                yield break;
             }
 
             nextPosition = GetNextPosition(presence);
             if (nextPosition == null)
             {
                 // All fields filled - END condition
-                return solution;
+                yield return solution;
+                yield break;
             }
 
 
-            return FindSolution(definition, solution, presence, nextPosition.Value, true)
-                   ?? FindSolution(definition, solution, presence, nextPosition.Value, false);
+            var valuesWith = FindSolution(definition, solution, presence, nextPosition.Value, true);
+            foreach (var value in valuesWith)
+            {
+                yield return value;
+            }
+
+            var valuesWithout = FindSolution(definition, solution, presence, nextPosition.Value, false);
+            foreach (var value in valuesWithout)
+            {
+                yield return value;
+            }
         }
 
         private bool UnitClausePropagation(SatDefinitionDto definition, BitArray solution, BitArray presence)
@@ -121,7 +138,7 @@ namespace SatSolverSdk.Strategy
             return null;
         }
 
-        private BitArray FindSolution(SatDefinitionDto definition, BitArray solution, BitArray presence, int nextPosition, bool nextValue)
+        private IEnumerable<BitArray> FindSolution(SatDefinitionDto definition, BitArray solution, BitArray presence, int nextPosition, bool nextValue)
         {
             var nextWithTrue = new BitArray(solution)
             {
@@ -135,19 +152,17 @@ namespace SatSolverSdk.Strategy
             if (isSatisfiableWith.Satisfaction == ESatisfaction.All)
             {
                 // All are already satisfied
-                return nextWithTrue;
+                yield return nextWithTrue;
             }
             if (isSatisfiableWith.Satisfaction == ESatisfaction.Some)
             {
                 // Evaluation is partial and no conflicting clauses found 
                 var solutionWith = Solve(definition, nextWithTrue, newPresence);
-                if (solutionWith != null)
+                foreach (var value in solutionWith)
                 {
-                    return solutionWith;
+                    yield return value;
                 }
             }
-
-            return null;
         }
 
         public override string Id => "DPLL";

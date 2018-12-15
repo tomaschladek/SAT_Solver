@@ -7,11 +7,12 @@ namespace SatSolverSdk.Strategy
     {
         public override string Id => "BT";
         
-        public override BitArray Solve(SatDefinitionDto definition)
+        public override FenotypDto Solve(SatDefinitionDto definition)
         {
             var emptySolution = new BitArray(definition.VariableCount,true);
             var presence = new BitArray(definition.VariableCount);
-            return Solve(definition, emptySolution, presence);
+            var solution = Solve(definition, emptySolution, presence);
+            return ScoreComputation.GetClearScores(definition,solution,null);
         }
 
         private BitArray Solve(SatDefinitionDto definition, BitArray solution, BitArray presence)

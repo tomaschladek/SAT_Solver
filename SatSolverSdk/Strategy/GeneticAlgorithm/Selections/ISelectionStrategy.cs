@@ -6,7 +6,7 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
 {
     public interface ISelectionStrategy
     {
-        IEnumerable<FenotypDto> Select(SatDefinitionDto definition, Random random, List<FenotypDto> generation, IDictionary<int, FormulaResultDto> cache);
+        IList<FenotypDto> Select(SatDefinitionDto definition, Random random, List<FenotypDto> generation, IDictionary<int, FormulaResultDto> cache);
         string Id { get; }
     }
 }

@@ -36,10 +36,10 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
         private int MutationProbability { get; }
         private int CrossoverProbability { get; }
 
-        public override BitArray Solve(SatDefinitionDto definition)
+        public override FenotypDto Solve(SatDefinitionDto definition)
         {
             _cache = new Dictionary<int, FormulaResultDto>();
-            return Execute(definition).Last().Fenotyp;
+            return Execute(definition).Last();
         }
 
         public override IEnumerable<FenotypDto> Execute(SatDefinitionDto definition)
@@ -56,7 +56,6 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm
                 generation = ScoreComputation.GetScores(definition, generationNew, Cache).ToList();
 
                 var fenotyp = ScoreComputation.GetBest(generation);
-                fenotyp.Score = fenotyp.Score - definition.Clauses.Count;
                 yield return fenotyp;
             }
         }

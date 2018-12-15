@@ -32,15 +32,11 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
             return elites;
         }
 
-        private IEnumerable<FenotypDto> RemoveWeakests(List<FenotypDto> generation)
+        private IEnumerable<FenotypDto> RemoveWeakests(IEnumerable<FenotypDto> generation)
         {
             if (WeakestsCount <= 0)
             {
                 return generation;
-            }
-            if (WeakestsCount >= generation.Count)
-            {
-                return new List<FenotypDto>();
             }
             return generation
                 .OrderBy(tuple => tuple.Score)
@@ -48,13 +44,13 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
         }
 
 
-        public IEnumerable<FenotypDto> Select(SatDefinitionDto definition, Random random, List<FenotypDto> generation,
+        public IList<FenotypDto> Select(SatDefinitionDto definition, Random random, List<FenotypDto> generation,
             IDictionary<int, FormulaResultDto> cache)
         {
             var correctedGeneration = CorrectionStrategy.CorrectGeneration(definition, generation).ToList();
             var elites = SelectElites(correctedGeneration).ToList();
-            var childrenByScore = SelectByCriteria(definition, random, generation, cache);
-            var result = RemoveWeakests(elites.Concat(childrenByScore).ToList());
+            var childrenByScore = SelectByCriteria(definition, random, generation, cache).ToList();
+            var result = RemoveWeakests(elites.Concat(childrenByScore)).ToList();
             return result;
         }
 

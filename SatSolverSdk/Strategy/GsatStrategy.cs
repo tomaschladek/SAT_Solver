@@ -19,7 +19,7 @@ namespace SatSolverSdk.Strategy
 
         private int MaxProbes { get; set; }
 
-        public override BitArray Solve(SatDefinitionDto definition)
+        public override FenotypDto Solve(SatDefinitionDto definition)
         {
             _cache = new Dictionary<int, FormulaResultDto>();
             Random generator = new Random();
@@ -32,7 +32,7 @@ namespace SatSolverSdk.Strategy
 
                     if (ScoreComputation.IsSatisfiable(definition, solution, presence, Cache).Satisfaction == ESatisfaction.All)
                     {
-                        return solution;
+                        return ScoreComputation.GetClearScores(definition, solution, null);
                     }
 
                     solution = FlipVariableWithMostSatisfiedClauses(definition, solution);

@@ -37,26 +37,26 @@ namespace SatSolverSdkUnitTests.Strategies
             var definition = ReadManager.ReadDefinition(
                 $@"C:\Users\tomas.chladek\Documents\Personal\Uni\Master\3rd\UMI\Sat\20_91_SAT\uf20-0{index}.cnf");
             var solution = Strategy.Solve(definition);
-            Assert.AreEqual(v1, solution[0]);
-            Assert.AreEqual(v2, solution[1]);
-            Assert.AreEqual(v3, solution[2]);
-            Assert.AreEqual(v4, solution[3]);
-            Assert.AreEqual(v5, solution[4]);
-            Assert.AreEqual(v6, solution[5]);
-            Assert.AreEqual(v7, solution[6]);
-            Assert.AreEqual(v8, solution[7]);
-            Assert.AreEqual(v9, solution[8]);
-            Assert.AreEqual(v10, solution[9]);
-            Assert.AreEqual(v11, solution[10]);
-            Assert.AreEqual(v12, solution[11]);
-            Assert.AreEqual(v13, solution[12]);
-            Assert.AreEqual(v14, solution[13]);
-            Assert.AreEqual(v15, solution[14]);
-            Assert.AreEqual(v16, solution[15]);
-            Assert.AreEqual(v17, solution[16]);
-            Assert.AreEqual(v18, solution[17]);
-            Assert.AreEqual(v19, solution[18]);
-            Assert.AreEqual(v20, solution[19]);
+            Assert.AreEqual(v1, solution.Fenotyp[0]);
+            Assert.AreEqual(v2, solution.Fenotyp[1]);
+            Assert.AreEqual(v3, solution.Fenotyp[2]);
+            Assert.AreEqual(v4, solution.Fenotyp[3]);
+            Assert.AreEqual(v5, solution.Fenotyp[4]);
+            Assert.AreEqual(v6, solution.Fenotyp[5]);
+            Assert.AreEqual(v7, solution.Fenotyp[6]);
+            Assert.AreEqual(v8, solution.Fenotyp[7]);
+            Assert.AreEqual(v9, solution.Fenotyp[8]);
+            Assert.AreEqual(v10, solution.Fenotyp[9]);
+            Assert.AreEqual(v11, solution.Fenotyp[10]);
+            Assert.AreEqual(v12, solution.Fenotyp[11]);
+            Assert.AreEqual(v13, solution.Fenotyp[12]);
+            Assert.AreEqual(v14, solution.Fenotyp[13]);
+            Assert.AreEqual(v15, solution.Fenotyp[14]);
+            Assert.AreEqual(v16, solution.Fenotyp[15]);
+            Assert.AreEqual(v17, solution.Fenotyp[16]);
+            Assert.AreEqual(v18, solution.Fenotyp[17]);
+            Assert.AreEqual(v19, solution.Fenotyp[18]);
+            Assert.AreEqual(v20, solution.Fenotyp[19]);
         }
     }
 }

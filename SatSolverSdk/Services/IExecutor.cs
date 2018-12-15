@@ -25,6 +25,7 @@ namespace SatSolverSdk.Services
                 for (int repetition = 1; repetition <= 10; repetition++)
                 {
                     var series = strategy.Execute(definition).ToList();
+                    series.ForEach(item => item.Score -= definition.VariableCount);
                     _provider.AppendFile(fullPath, new []{ $"{definition.FileName}-Run{repetition}" }.Concat(series.Select(item => item.Score.ToString())).ToArray());
                 }
             }
@@ -34,6 +35,7 @@ namespace SatSolverSdk.Services
 
         public double ExecuteOverDefinitions(IStrategy strategy, IList<SatDefinitionDto> definitions, string fullPath)
         {
+            
             var cache = new List<long>();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -41,8 +43,9 @@ namespace SatSolverSdk.Services
             {
                 for (int repetition = 1; repetition <= 1; repetition++)
                 {
-                    var series = strategy.Execute(definition).ToList();
-                    cache.Add(series.Last().Score);
+                    var score = strategy.Solve(definition).Score;
+                    score -= definition.Clauses.Count;
+                    cache.Add(score);
                 }
             }
             _provider.AppendFile(fullPath, new[] { $"{strategy.Id}" }.Concat(cache.Select(item => item.ToString())).ToArray());

@@ -10,6 +10,10 @@ namespace SatSolverSdk.Strategy
     {
         public FenotypDto GetBest(List<FenotypDto> generation)
         {
+            if (!generation.Any())
+            {
+                return null;
+            }
             var maxWeight = generation.Max(item => item.Score);
             var result = generation.First(item => item.Score == maxWeight);
             return new FenotypDto(result.Fenotyp, maxWeight, result.SatResult);
@@ -24,9 +28,7 @@ namespace SatSolverSdk.Strategy
                 .Select(item =>
                 {
                     var satResult = IsSatisfiable(definition, item, presence, cache);
-                    var score = satResult.Satisfaction == ESatisfaction.All
-                        ? GetWeights(item, definition) + definition.Clauses.Count
-                        : satResult.Counter;
+                    var score = satResult.Weights + satResult.Counter;
                     return new FenotypDto(item, score, satResult);
                 });
         }
@@ -99,9 +101,13 @@ namespace SatSolverSdk.Strategy
                 }
             }
 
-            var result = new FormulaResultDto(counter, isAnyFailed ? ESatisfaction.NotSatisfiedExists : areAllClausesSatisfied
+            var satisfaction = isAnyFailed ? ESatisfaction.NotSatisfiedExists : areAllClausesSatisfied
                 ? ESatisfaction.All
-                : ESatisfaction.Some);
+                : ESatisfaction.Some;
+            var weight = satisfaction == ESatisfaction.All
+                ? GetWeights(partialSolution, definition)
+                : 0;
+            var result = new FormulaResultDto(counter, satisfaction,weight);
             cache?.Add(hash, result);
             return result;
         }

@@ -28,12 +28,29 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Selections
         {
             for (int index = StartCount; index < generation.Count; index++)
             {
-                var tournamentCandidates = GenerateTournament(random, generation);
-                var tournament = tournamentCandidates.ToList();
-                var maxScore = tournament.Max(item => item.Score);
-                var winner = tournament.First(item => item.Score == maxScore);
-                yield return new FenotypDto(new BitArray(winner.Fenotyp),winner.Score,winner.SatResult);
+                var tournament = GenerateTournament(random, generation).ToList();
+                int maxIndex = GetMaxIndex(tournament);
+                var winner = tournament[maxIndex];
+                yield return new FenotypDto(new BitArray(winner.Fenotyp), winner.Score, winner.SatResult);
             }
+        }
+
+        private static int GetMaxIndex(List<FenotypDto> tournament)
+        {
+            var maxScore = long.MinValue;
+            var indexScore = 0;
+            var maxIndex = int.MinValue;
+            foreach (var fenotyp in tournament)
+            {
+                if (fenotyp.Score.CompareTo(maxScore) > 0 || maxIndex == int.MinValue)
+                {
+                    maxIndex = indexScore;
+                    maxScore = fenotyp.Score;
+                }
+                indexScore++;
+            }
+
+            return maxIndex;
         }
 
         private IEnumerable<FenotypDto> GenerateTournament(Random random, List<FenotypDto> generation)

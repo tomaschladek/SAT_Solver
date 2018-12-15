@@ -15,7 +15,10 @@ namespace SatSolverSdk.Strategy.GeneticAlgorithm.Crossing
                 var randomVector = new BitArray(vectorSize);
                 for (int itemIndex = 0; itemIndex < vectorSize; itemIndex++)
                 {
-                    randomVector.Set(itemIndex, random.Next(0, 100) > crossoverProbability);
+                    if (random.Next(0, 100) > crossoverProbability)
+                    {
+                        randomVector.Set(itemIndex, true);
+                    }
                 }
 
                 var first = new BitArray(vectorSize);
